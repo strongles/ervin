@@ -82,7 +82,7 @@ def get_from_db(range_start, range_end, accession_id, filepath):
     raise Exception("Accession ID not found.")
 
 
-if __name__ == "__main__":
+def run():
     args = validate_settings(get_conf_settings(), parse_args())
     acc_id = args["accession_id"]
     start = args["start"]
@@ -91,3 +91,8 @@ if __name__ == "__main__":
 
     new_range_start, new_range_end = compute_ranges(start, end)
     result = get_from_db(new_range_start, new_range_end, acc_id, db_filepath)
+    print(result)
+
+
+if __name__ == "__main__":
+    run()
