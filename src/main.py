@@ -1,21 +1,13 @@
 from Bio import SeqIO
+from Bio.Blast.Applications import NcbiblastnCommandline
+from src.exceptions import *
+from src.defaults import *
+from src.scaf_file import ScafRecord
 import argparse
 import json
 import os
-# from Bio.Blast.NCBIWWW import qblast
 
 
-class BadConfigFormatException(Exception):
-    pass
-
-
-class IncompleteArgsException(Exception):
-    pass
-
-
-FILEPATH = "../data/GCA_004026985.1_MyoMyo_v1_BIUU_genomic.fna"
-CONFIG_FILEPATH = "config/config.json"
-NEWLINE = "\n"
 REQUIRED_ARGS = [
     "start",
     "end",
@@ -82,6 +74,87 @@ def get_from_db(range_start, range_end, accession_id, filepath):
     raise Exception("Accession ID not found.")
 
 
+def run_blast_against_tempfile():
+    # outfmt=15 -> JSON
+    # outfmt=5 -> XML
+    blast_command = NcbiblastnCommandline(out=TEMP_BLASTN_OUTPUT,
+                                          query=TEMP_FASTA_FILE,
+                                          subject=TEMP_FASTA_FILE,
+                                          outfmt=15,
+                                          strand="both")
+    blast_command()
+
+
+def write_result_to_tempfile(record):
+    record.print_to_file(TEMP_FASTA_FILE)
+
+
+def read_blast_result_from_file():
+    with open(TEMP_BLASTN_OUTPUT) as blast_file:
+        return json.load(blast_file.read())
+
+
+def get_blast_results():
+    # Filering out some of the bumf of unecessary nesting here, as nothing before the report data is really meaningful
+    # I'm looking at you XML
+    blast_data = read_blast_result_from_file()["BlastOutput2"]["report"]
+    return blast_data["results"]["bl2seq"]
+
+
+def parse_blast_fasta_title(title):
+    return_dict = {}
+    tokens = title.split(" ")
+    return_dict["acc_id"] = tokens[0]
+    return_dict["start"] = tokens[1]
+    return_dict["end"] = tokens[2]
+    return return_dict
+
+
+def determine_ltr_hits(blast_results, db_path):
+    ltr_return = []
+    blast_score_groups = {}
+    for hit in blast_results:
+        if hit["score"] not in blast_score_groups:
+            blast_score_groups[hit["bit_score"]] = [hit]
+        else:
+            blast_score_groups[hit["bit_score"]].append(hit)
+    potential_ltrs = []
+    for key, value in blast_score_groups.items():
+        if len(value) == 2:
+            potential_ltrs.append(value)
+    for potential_ltr in potential_ltrs:
+        if potential_ltr[0]["query_from"] == potential_ltr[1]["hit_from"] \
+                or potential_ltr[0]["hit_from"] == potential_ltr[1]["query_from"]:
+            start_pos = min(potential_ltr[0]["query_from"],
+                            potential_ltr[0]["hit_from"],
+                            potential_ltr[1]["query_from"],
+                            potential_ltr[1]["hit_from"])
+            end_pos = max(potential_ltr[0]["query_to"],
+                          potential_ltr[0]["hit_to"],
+                          potential_ltr[1]["query_to"],
+                          potential_ltr[1]["hit_to"])
+            parsed_title = parse_blast_fasta_title(blast_results["query_title"])
+            full_segment_start = start_pos + parsed_title["start"]
+            full_segment_end = end_pos + parsed_title["end"]
+            scaf_record = ScafRecord(accession_id=parsed_title["acc_id"],
+                                     first_position=full_segment_start,
+                                     second_position=full_segment_end,
+                                     segment=get_from_db(full_segment_start,
+                                                         full_segment_end,
+                                                         parsed_title["acc_id"],
+                                                         db_path))
+            ltr_return.append(str(scaf_record))
+    return ltr_return
+
+
+def print_ltr_candidates_to_file(ltr_list):
+    with open(LTR_OUTFILE, "w") as outfile:
+        for ltr in ltr_list:
+            outfile.write(ltr)
+
+
+
+
 def run():
     args = validate_settings(get_conf_settings(), parse_args())
     acc_id = args["accession_id"]
@@ -90,8 +163,16 @@ def run():
     db_filepath = args["fasta_filepath"]
 
     new_range_start, new_range_end = compute_ranges(start, end)
-    result = get_from_db(new_range_start, new_range_end, acc_id, db_filepath)
-    print(result)
+    scaf_record = ScafRecord(accession_id=acc_id,
+                             first_position=new_range_start,
+                             second_position=new_range_end,
+                             segment=get_from_db(new_range_start, new_range_end, acc_id, db_filepath))
+    write_result_to_tempfile(scaf_record)
+    run_blast_against_tempfile()
+    blast_results = get_blast_results()
+    ltr_candidates = determine_ltr_hits(blast_results, db_filepath)
+    print_ltr_candidates_to_file(ltr_candidates)
+    # TODO: Plug the LTR segments into the VIRUS DB to confirm them further
 
 
 if __name__ == "__main__":
