@@ -1,8 +1,0 @@
-{
-  "range_expansion_size": 5000,
-  "range_size": 100,
-  "fasta_filepath": "data/GCA_004026985.1_MyoMyo_v1_BIUU_genomic.fna",
-  "accession_id": "PVIZ010000013.1",
-  "start": 10000,
-  "end": 20000
-}

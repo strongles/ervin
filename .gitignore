@@ -5,3 +5,6 @@ __pycache__/
 *.json
 *.xml
 *.fasta
+.DS_Store
+*.json
+config/

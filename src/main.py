@@ -8,36 +8,68 @@ import json
 import os
 
 
-REQUIRED_ARGS = [
-    "start",
-    "end",
-    "accession_id",
-    "range_expansion_size",
-    "range_size"
-]
+REQUIRED_ARGS = ["file"]
+#     [
+#     "start",
+#     "end",
+#     "accession_id",
+#     "range_expansion_size",
+#     "range_size"
+# ]
+
+
+def parse_input_file(filepath):
+    if os.path.isfile(filepath):
+        file_entries = []
+        with open(filepath) as input_file:
+            for line in input_file:
+                line_tokens = line.strip().split(" ")
+                file_entries.append({
+                    "accession_id": line_tokens[0],
+                    "start": int(line_tokens[1]),
+                    "end": int(line_tokens[2])
+                })
+        return file_entries
+    else:
+        raise FileExistsError(f"File {filepath} does not exist.")
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--start",
-                        help="start of the range to examine in the genome",
-                        type=int,
-                        required=True)
-    parser.add_argument("-e", "--end",
-                        help="end of the range to examine in the genome",
-                        type=int,
-                        required=True)
-    parser.add_argument("-aid", "--accession_id",
-                        help="accession id",
+    parser.add_argument("-f", "--file",
+                        help="File containing genome segment defintitions",
                         type=str,
-                        required=True)
+                        required=True),
     parser.add_argument("-res", "--range_expansion_size",
                         help="the number of positions by which to expand the selection window from the genome",
                         type=int)
-    parser.add_argument("-rs", "--range_size",
-                        help="TODO: Figure out what this is for",
-                        type=int)
+    parser.add_argument("-ff", "--fasta_filepath",
+                        help="filepath to the fasta db to query for the full genome sequence",
+                        type=str)
     return parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-s", "--start",
+    #                     help="start of the range to examine in the genome",
+    #                     type=int,
+    #                     required=True)
+    # parser.add_argument("-e", "--end",
+    #                     help="end of the range to examine in the genome",
+    #                     type=int,
+    #                     required=True)
+    # parser.add_argument("-aid", "--accession_id",
+    #                     help="accession id",
+    #                     type=str,
+    #                     required=True)
+    # parser.add_argument("-res", "--range_expansion_size",
+    #                     help="the number of positions by which to expand the selection window from the genome",
+    #                     type=int)
+    # parser.add_argument("-rs", "--range_size",
+    #                     help="TODO: Figure out what this is for",
+    #                     type=int)
+    # parser.add_argument("-f", "--fasta_filepath",
+    #                     help="filepath to the fasta db to query for the full genome sequence",
+    #                     type=str)
+    # return parser.parse_args()
 
 
 def get_conf_settings():
@@ -91,51 +123,58 @@ def write_result_to_tempfile(record):
 
 def read_blast_result_from_file():
     with open(TEMP_BLASTN_OUTPUT) as blast_file:
-        return json.load(blast_file.read())
+        return json.load(blast_file)
 
 
 def get_blast_results():
     # Filering out some of the bumf of unecessary nesting here, as nothing before the report data is really meaningful
     # I'm looking at you XML
-    blast_data = read_blast_result_from_file()["BlastOutput2"]["report"]
-    return blast_data["results"]["bl2seq"]
+    blast_data = read_blast_result_from_file()["BlastOutput2"][0]["report"]
+    return blast_data["results"]["bl2seq"][0]
 
 
 def parse_blast_fasta_title(title):
     return_dict = {}
     tokens = title.split(" ")
     return_dict["acc_id"] = tokens[0]
-    return_dict["start"] = tokens[1]
-    return_dict["end"] = tokens[2]
+    return_dict["start"] = int(tokens[1])
+    return_dict["end"] = int(tokens[2])
     return return_dict
 
 
 def determine_ltr_hits(blast_results, db_path):
+    # print("In determine LTRs")
     ltr_return = []
     blast_score_groups = {}
-    for hit in blast_results:
-        if hit["score"] not in blast_score_groups:
+    for hit in blast_results["hits"][0]["hsps"]:
+        if hit["bit_score"] not in blast_score_groups:
             blast_score_groups[hit["bit_score"]] = [hit]
         else:
             blast_score_groups[hit["bit_score"]].append(hit)
+        # print(hit)
+    # print(f"Blast score groups: {blast_score_groups}")
     potential_ltrs = []
     for key, value in blast_score_groups.items():
-        if len(value) == 2:
-            potential_ltrs.append(value)
+        print(f"score: {key} hits: {len(value)}")
+        if len(value) > 1:
+            if LTR_LOWER < value[0]["align_len"] < LTR_UPPER:
+                potential_ltrs.append(value)
+    # print(f"Potential LTRS: {potential_ltrs}")
     for potential_ltr in potential_ltrs:
-        if potential_ltr[0]["query_from"] == potential_ltr[1]["hit_from"] \
-                or potential_ltr[0]["hit_from"] == potential_ltr[1]["query_from"]:
-            start_pos = min(potential_ltr[0]["query_from"],
-                            potential_ltr[0]["hit_from"],
-                            potential_ltr[1]["query_from"],
-                            potential_ltr[1]["hit_from"])
-            end_pos = max(potential_ltr[0]["query_to"],
-                          potential_ltr[0]["hit_to"],
-                          potential_ltr[1]["query_to"],
-                          potential_ltr[1]["hit_to"])
-            parsed_title = parse_blast_fasta_title(blast_results["query_title"])
-            full_segment_start = start_pos + parsed_title["start"]
-            full_segment_end = end_pos + parsed_title["end"]
+        start = 0
+        end = 0
+        for record in potential_ltr:
+            start = min(record["query_from"], record["hit_from"])
+            end = max(record["query_to"], record["hit_to"])
+            print(f"Sequence from {start} to {end}; length: {end-start}")
+        parsed_title = parse_blast_fasta_title(blast_results["query_title"])
+        full_segment_start = start + parsed_title["start"]
+        full_segment_end = end + parsed_title["start"]
+        # print(f"Original start: {parsed_title[1]} Original end: {parsed_title[2]}")
+        # print(f"Internal start: {start_point} Internal end: {end_point}")
+        print(f"Extracted sequence length: {start}-{end} = {end- start}")
+        print(f"Full sequence start and end: {full_segment_start}-{full_segment_end} Sequence length should be {full_segment_end-full_segment_start}")
+        if full_segment_end - full_segment_start <= ENV_UPPER:
             scaf_record = ScafRecord(accession_id=parsed_title["acc_id"],
                                      first_position=full_segment_start,
                                      second_position=full_segment_end,
@@ -153,24 +192,24 @@ def print_ltr_candidates_to_file(ltr_list):
             outfile.write(ltr)
 
 
-
-
 def run():
     args = validate_settings(get_conf_settings(), parse_args())
-    acc_id = args["accession_id"]
-    start = args["start"]
-    end = args["end"]
+    # acc_id = args["accession_id"]
+    # start = args["start"]
+    # end = args["end"]
+    records = parse_input_file(args["file"])
     db_filepath = args["fasta_filepath"]
-
-    new_range_start, new_range_end = compute_ranges(start, end)
-    scaf_record = ScafRecord(accession_id=acc_id,
-                             first_position=new_range_start,
-                             second_position=new_range_end,
-                             segment=get_from_db(new_range_start, new_range_end, acc_id, db_filepath))
-    write_result_to_tempfile(scaf_record)
-    run_blast_against_tempfile()
-    blast_results = get_blast_results()
-    ltr_candidates = determine_ltr_hits(blast_results, db_filepath)
+    ltr_candidates = []
+    for record in records:
+        new_range_start, new_range_end = compute_ranges(record["start"], record["end"])
+        scaf_record = ScafRecord(accession_id=record["accession_id"],
+                                 first_position=new_range_start,
+                                 second_position=new_range_end,
+                                 segment=get_from_db(new_range_start, new_range_end, record["accession_id"], db_filepath))
+        write_result_to_tempfile(scaf_record)
+        run_blast_against_tempfile()
+        blast_results = get_blast_results()
+        ltr_candidates.extend(determine_ltr_hits(blast_results, db_filepath))
     print_ltr_candidates_to_file(ltr_candidates)
     # TODO: Plug the LTR segments into the VIRUS DB to confirm them further
 
