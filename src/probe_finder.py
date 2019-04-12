@@ -1,10 +1,3 @@
-"""
-for row in file1:
-    for line in file2:
-        if accession_ids match and scaffolds match:
-
-"""
-
 FASTA_OUTPUT = "output/result.fasta"
 TSV_OUTPUT = "output/result.tsv"
 
