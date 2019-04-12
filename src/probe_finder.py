@@ -12,7 +12,6 @@ class ProbeData:
     alignment_length = int
     acc_sequence = str
     scaffold_alignment = str
-    unknown_data = str
     frame = int
 
     def __init__(self, source=None, overrides=None):
