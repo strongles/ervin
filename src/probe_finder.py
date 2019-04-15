@@ -85,10 +85,10 @@ class ProbeData:
         }
         if first.end < second.start:
             overrides["scaffold_alignment"] = "".join([first.scaffold_alignment,
-                                                       "N" * (second.start - first.end / 3),
+                                                       "N" * ((second.start - first.end) / 3),
                                                        second.scaffold_alignment])
         elif first.end > second.start:
-            overlap = first.end - second.start / 3  # Account for nucleotide -> protein conversion
+            overlap = (first.end - second.start) / 3  # Account for nucleotide -> protein conversion
             overrides["scaffold_alignment"] = "".join([first.scaffold_alignment,
                                                        second.scaffold_alignment[:overlap]])
         align_length = len(overrides["scaffold_alignment"]) - str.count("-", overrides["scaffold_alignment"])
