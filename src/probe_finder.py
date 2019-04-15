@@ -3,6 +3,9 @@ from math import ceil
 FASTA_OUTPUT = "output/result.fasta"
 TSV_OUTPUT = "output/result.tsv"
 
+INPUT_FILE_ONE = "/Users/rob/PycharmProjects/ervin/data/first_probe_file.tsv"
+INPUT_FILE_TWO = "/Users/rob/PycharmProjects/ervin/data/second_probe_file.tsv"
+
 
 class ProbeData:
     accession_id = str
@@ -31,7 +34,7 @@ class ProbeData:
             self.direction = source.direction
             self.matched = False
             if overrides is not None:
-                for attribute, value in overrides:
+                for attribute, value in overrides.items():
                     setattr(self, attribute, value)
 
         elif source is not None:
@@ -75,7 +78,7 @@ class ProbeData:
 
     @staticmethod
     def merge_records(a, b):
-        if a.end > b.start:
+        if a.start < b.start:
             first = a
             second = b
         else:
@@ -108,16 +111,21 @@ def read_probe_records_from_file(filename):
 
 # Account for incomplete probe, merge the alignment so that the
 def is_near_neighbour(master, comparitor):
-    return (master.start - comparitor.end <= 50 or comparitor.start - master.end <= 50) \
+    print(f"NEAR NEIGHBOUR: master:{master.start}-{master.end} comparitor:{comparitor.start}-{comparitor.end}")
+    first_diff = master.start - comparitor.end
+    second_diff = comparitor.start - master.end
+    return (0 < first_diff <= 50 or 0 < second_diff <= 50) \
            and master.direction == comparitor.direction
 
 
 def is_range_extension(master, comparitor):
+    print("RANGE EXTENSION")
     return (comparitor.start < master.start and master.end < comparitor.end) or \
            (master.start > comparitor.start and master.end > comparitor.end)
 
 
 def is_superset(master, comparitor):
+    print("SUPERSET")
     return master.start > comparitor.start and master.end < comparitor.end
 
 
@@ -129,28 +137,35 @@ def write_to_files(record):
 
 
 def clear_output_files():
-    with open(FASTA_OUTPUT, "a"):
-        with open(TSV_OUTPUT, "a"):
+    with open(FASTA_OUTPUT, "w"):
+        with open(TSV_OUTPUT, "w"):
             pass
 
 
 def run():
     clear_output_files()
-    first_probe_data = read_probe_records_from_file("first_probe_file")
-    second_probe_data = read_probe_records_from_file("second_probe_file")
+    first_probe_data = read_probe_records_from_file(INPUT_FILE_ONE)
+    second_probe_data = read_probe_records_from_file(INPUT_FILE_TWO)
     for probe_record in first_probe_data:
+        print("IN FIRST PROBE LOOP")
         for probe_comparitor in second_probe_data:
+            print("IN SECOND PROBE LOOP")
             if probe_record.scaffold == probe_comparitor.scaffold:
+                print("SCAFFOLD MATCH")
                 probe_record.matched = True
                 probe_comparitor.matched = True
                 if is_superset(probe_record, probe_comparitor):
+                    print("SUPERSET")
                     write_to_files(probe_comparitor)
                 elif is_near_neighbour(probe_record, probe_comparitor) \
                         or is_range_extension(probe_record, probe_comparitor):
+                    print("GOING TO MERGE")
                     write_to_files(ProbeData.merge_records(probe_record, probe_comparitor))
                 else:
+                    print("NEVERMIND")
                     continue
         if not probe_record.matched:
+            print("NOTHING MATCHED")
             write_to_files(probe_record)
     unmatched_comparitors = [comparitor for comparitor in second_probe_data if comparitor.matched is False]
     map(write_to_files, unmatched_comparitors)
