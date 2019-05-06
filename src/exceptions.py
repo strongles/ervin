@@ -4,3 +4,7 @@ class BadConfigFormatException(Exception):
 
 class IncompleteArgsException(Exception):
     pass
+
+
+class InvalidPathException(Exception):
+    pass
