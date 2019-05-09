@@ -89,7 +89,7 @@ def print_results(result_list, title, run_time, output_dir):
     output_filename = f"{title}_{run_time}.tsv"
     output_filepath = os.path.join(output_dir, output_filename)
     with open(output_filepath, 'w') as result_out:
-        for result in result_list:
+        for result in sorted(result_list):
             result_out.write(result.to_tsv())
 
 
