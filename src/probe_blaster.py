@@ -100,7 +100,7 @@ def run():
     with progressbar.ProgressBar(max_value=len(probe_records), type="percentage") as bar:
         bar.update(0)
         for count, probe_record in enumerate(probe_records):
-            blast_result = run_blast(probe_record, args.database_path.name)
+            blast_result = run_blast(probe_record, args.database_path)
             filtered_results = filter_results(blast_result)
             print_results(filtered_results, probe_record["title"], run_time, args.output_dir)
             bar.update(count)
