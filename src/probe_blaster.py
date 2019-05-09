@@ -21,7 +21,7 @@ def parse_args():
                         required=True)
     parser.add_argument('-db', "--database_path",
                         help="Path to the genome database against which the probe records are to be BLASTed",
-                        type=argparse.FileType('r'),
+                        type=str,
                         required=True)
     parser.add_argument("-o", "--output_dir",
                         help="Location to which to write the result files",
