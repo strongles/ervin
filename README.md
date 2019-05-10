@@ -7,5 +7,8 @@ This has been designed primarily with a view to be used on OSX, cross-compatibil
 ### Requirements
 - Python 3.6+ ([Download](https://www.python.org/downloads/))
 - NCBI BLAST suite must be installed locally ([Download](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/))
-- Local genome fasta db to be queried
+- Local genome db to be queried
     - This should be located in a directory named `data` and specified either using the command line argument or by defining in the `config/config.json` file
+    
+### Current functionality
+- [probe_blaster](docs/probe_blaster.MD)
