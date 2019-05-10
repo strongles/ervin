@@ -30,12 +30,28 @@ def parse_args():
     return parser.parse_args()
 
 
-def read_probe_records_from_file(filename):
+def read_and_sanitise_raw_data(filename):
     with open(filename) as fasta_input:
-        raw_file_data = fasta_input.readlines()
+        raw_data = fasta_input.readlines()
+    stripped_newlines_data = [line.strip() for line in raw_data]
+    purged_empty_lines_data = [line for line in stripped_newlines_data if line != ""]
+    return purged_empty_lines_data
+
+
+def read_probe_records_from_file(filename):
+    input_data = read_and_sanitise_raw_data(filename)
+    fasta_titles = [line for line in input_data if ">" in line]
+    title_indices = [input_data.index(title) for title in fasta_titles]
     parsed_file_data = []
-    for i in range(0, len(raw_file_data), 2):
-        parsed_file_data.append({"title": raw_file_data[i].strip(), "seq": raw_file_data[i+1].strip()})
+    for i in range(len(title_indices)):
+        try:
+            sequence = "".join(input_data[title_indices[i]+1:title_indices[i+1]])
+            record = {"title": input_data[title_indices[i]], "seq": sequence}
+            parsed_file_data.append(record)
+        except IndexError:
+            sequence = "".join(input_data[title_indices[i] + 1:])
+            record = {"title": input_data[title_indices[i]], "seq": sequence}
+            parsed_file_data.append(record)
     return parsed_file_data
 
 
@@ -48,7 +64,7 @@ def run_blast(probe, db):
     print_probe_to_temp_fasta_file(probe)
     command = NcbiblastnCommandline(cmd="tblastn",
                                     out=TEMP_TBLASTN_OUTPUT,
-                                    outfmt="\"6 sseqid qseqid slen sstart send evalue length qseq sseq sframe\"",
+                                    outfmt="\"6 qseqid sseqid slen sstart send evalue length qseq sseq sframe\"",
                                     # outfmt=15,
                                     # outfmt=6,
                                     query=TEMP_FASTA_FILE,
