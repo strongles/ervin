@@ -11,6 +11,7 @@
     white-space: nowrap;
 }
 
-tr td {
+table tr td {
     text-align: center;
+    white-space: nowrap;
 }
