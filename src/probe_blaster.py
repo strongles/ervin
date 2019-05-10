@@ -29,7 +29,7 @@ def parse_args():
                         help="Location to which to write the result files",
                         type=str,
                         required=False)
-    parser.add_argument("-a", "--alignment_threshold",
+    parser.add_argument("-a", "--alignment_length_threshold",
                         help="Minimum length threshold that BLAST result alignment sequence lengths should exceed",
                         type=int,
                         required=False)
@@ -85,7 +85,7 @@ def run_blast(probe, db):
 
 
 def _length_requirement(probe_list, args):
-    if args.alignment_threshold is None:
+    if args.alignment_length_threshold is None:
         align_length = DEFAULT_ALIGNMENT_LENGTH_THRESHOLD
     else:
         align_length = args.align_length
