@@ -1,3 +1,7 @@
-.data_table {
+.data-table-wrapper {
   overflow-x: scroll;
+}
+
+.data-table {
+    width: 100%;
 }
