@@ -7,5 +7,6 @@
 }
 
 .data-table-cell {
+    width: 1%;
     white-space: nowrap;
 }
