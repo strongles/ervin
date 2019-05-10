@@ -12,6 +12,8 @@ TEMP_TBLASTN_OUTPUT = "/tmp/temp_tblastn.tsv"
 
 DEFAULT_OUTPUT_DIR = os.path.join(os.getcwd(), "OUTPUT")
 
+DEFAULT_ALIGNMENT_LENGTH_THRESHOLD = 400
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -26,6 +28,10 @@ def parse_args():
     parser.add_argument("-o", "--output_dir",
                         help="Location to which to write the result files",
                         type=str,
+                        required=False)
+    parser.add_argument("-a", "--alignment_threshold",
+                        help="Minimum length threshold that BLAST result alignment sequence lengths should exceed",
+                        type=int,
                         required=False)
     return parser.parse_args()
 
@@ -78,19 +84,21 @@ def run_blast(probe, db):
     return probe_records
 
 
-def _length_requirement(probe_list):
-    # filtered_hsps = [entry for entry in probe["hsps"] if entry["align_len"] > 400]
-    # probe["hsps"] = filtered_hsps
+def _length_requirement(probe_list, args):
+    if args.alignment_threshold is None:
+        align_length = DEFAULT_ALIGNMENT_LENGTH_THRESHOLD
+    else:
+        align_length = args.align_length
 
-    return [probe for probe in probe_list if probe.alignment_length > 400]
+    return [probe for probe in probe_list if probe.alignment_length > align_length]
 
 
-def filter_results(hits):
+def filter_results(hits, args):
     filters = [
         _length_requirement,
     ]
     for filter_case in filters:
-        hits = filter_case(hits)
+        hits = filter_case(hits, args)
     return hits
 
 
@@ -117,10 +125,9 @@ def run():
         bar.update(0)
         for count, probe_record in enumerate(probe_records):
             blast_result = run_blast(probe_record, args.database_path)
-            filtered_results = filter_results(blast_result)
+            filtered_results = filter_results(blast_result, args)
             print_results(filtered_results, probe_record["title"], run_time, args.output_dir)
             bar.update(count)
-            # break
 
 
 if __name__ == "__main__":
