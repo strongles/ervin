@@ -22,25 +22,6 @@ def read_probe_records_from_file(filename):
     return record_dict
 
 
-# Account for incomplete probe, merge the alignment so that the
-def is_near_neighbour(master, comparitor):
-    first_diff = master.start - comparitor.end
-    second_diff = comparitor.start - master.end
-    return (0 < first_diff <= 50 or 0 < second_diff <= 50) and master.direction == comparitor.direction and master.frame == comparitor.frame
-
-
-def is_range_extension(master, comparitor):
-    return (((master.start <= comparitor.start) and (comparitor.start <= master.end < comparitor.end)) or
-            ((comparitor.start <= master.start) and (master.start <= comparitor.end < master.end)) or
-            ((master.end >= comparitor.end) and (comparitor.start <= master.start < comparitor.end)) or
-            ((comparitor.end >= master.end) and (master.start <= comparitor.start < master.end))) and \
-            master.direction == comparitor.direction and master.frame == comparitor.frame
-
-
-def is_superset(master, comparitor):
-    return master.start >= comparitor.start and master.end <= comparitor.end and master.frame == comparitor.frame
-
-
 def write_to_files(output_files, record):
     (fasta_output, tsv_output) = output_files
     with open(fasta_output, "a") as fasta:
@@ -96,10 +77,10 @@ def find_probes(first_probe_data, second_probe_data):
         for record in records:
             current_print_candidate = record
             for comparitor in second_probe_data[scaffold]:
-                if is_superset(current_print_candidate, comparitor):
+                if current_print_candidate.is_superset(comparitor):
                     current_print_candidate = comparitor
-                elif is_near_neighbour(current_print_candidate, comparitor) \
-                        or is_range_extension(current_print_candidate, comparitor):
+                elif current_print_candidate.is_near_neighbour(comparitor) \
+                        or current_print_candidate.is_range_extension(comparitor):
                     current_print_candidate = ProbeData.merge_records(current_print_candidate, comparitor)
             if scaffold not in output_data:
                 output_data[scaffold] = {current_print_candidate}

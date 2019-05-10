@@ -93,6 +93,23 @@ class ProbeData:
         tab = "\t"
         return f"{tab.join(stringified_output)}\n"
 
+    def is_superset(self, comparitor):
+        return self.start >= comparitor.start and self.end <= comparitor.end and self.frame == comparitor.frame
+
+    def is_near_neighbour(self, comparitor):
+        first_diff = self.start - comparitor.end
+        second_diff = comparitor.start - self.end
+        return (0 < first_diff <= 50 or 0 < second_diff <= 50) and \
+               self.direction == comparitor.direction and \
+               self.frame == comparitor.frame
+
+    def is_range_extension(self, comparitor):
+        return (((self.start <= comparitor.start) and (comparitor.start <= self.end < comparitor.end)) or
+                ((comparitor.start <= self.start) and (self.start <= comparitor.end < self.end)) or
+                ((self.end >= comparitor.end) and (comparitor.start <= self.start < comparitor.end)) or
+                ((comparitor.end >= self.end) and (self.start <= comparitor.start < self.end))) and \
+               self.direction == comparitor.direction and self.frame == comparitor.frame
+
     @staticmethod
     def merge_records(a, b):
         if a.start < b.start:
