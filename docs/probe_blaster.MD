@@ -20,16 +20,16 @@ It will then provide a `.tsv` file on a per-fasta-record basis, output to the di
 #### Example
 
 ``
-python src/probe_blaster.py -f fasta_file.fasta -db genome_db -o probe_blaster_output
+python src/probe_blaster.py -f data/fasta_file.fasta -db dbs/genome_db -o results/probe_blaster_output
 ``
 
 #### Output
 
-_Column headers are not present in the data output, they are provided here for illustrative purposes only_
+_NB: Column headers are not present in the data output, they are provided here for illustrative purposes only_
 
 | Accession ID | Scaffold | Scaffold length | Start | End | E-value | Alignment length | Acc. Seq | Scaffold Alignment | Frame |
 | ------------ | -------- | --------------- | ----- | --- | ------- | ---------------- | -------- | ------------------ | ----- |
 | XXX11111.1 | Scaf_00000111 | 12345678 | 992016 | 994340 | 1.63E-114 | 797 | MVLDLKDCFFSIPLAEQDRE... | LILDLKDCFFTIPLHPDD... | 1 |
-| ------------ | -------- | --------------- | ----- | --- | ------- | ---------------- | -------- | ------------------ | ----- |
-| ------------ | -------- | --------------- | ----- | --- | ------- | ---------------- | -------- | ------------------ | ----- |
-| ------------ | -------- | --------------- | ----- | --- | ------- | ---------------- | -------- | ------------------ | ----- |
+| ---------- | ------------- | -------- | ------ | ------ | --------- | --- | ----------------------- | --------------------- | - |
+| ---------- | ------------- | -------- | ------ | ------ | --------- | --- | ----------------------- | --------------------- | - |
+| ---------- | ------------- | -------- | ------ | ------ | --------- | --- | ----------------------- | --------------------- | - |
