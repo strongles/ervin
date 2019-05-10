@@ -1,11 +1,11 @@
 from Bio.Blast.Applications import NcbiblastnCommandline
 from ervin_utils import format_timestamp_for_filename
+from exceptions import InvalidPathException
 from probe_data import ProbeData
 import progressbar
 import argparse
 import os
 
-from exceptions import InvalidPathException
 
 TEMP_FASTA_FILE = "/tmp/temp.fasta"
 TEMP_TBLASTN_OUTPUT = "/tmp/temp_tblastn.tsv"
@@ -81,7 +81,8 @@ def run_blast(probe, db, e_value_threshold):
     print_probe_to_temp_fasta_file(probe)
     command = NcbiblastnCommandline(cmd="tblastn",
                                     out=TEMP_TBLASTN_OUTPUT,
-                                    outfmt="\"6 qseqid sseqid slen sstart send evalue length qseq sseq sframe\"",
+                                    outfmt="\"6 qseqid sseqid slen sstart send "
+                                           "evalue length qseq sseq sframe\"",
                                     query=TEMP_FASTA_FILE,
                                     db=db,
                                     evalue=e_value_threshold)
