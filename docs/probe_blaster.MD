@@ -45,52 +45,52 @@ _NB: Column headers are not present in the data output, they are provided here f
 <th>Frame</th> 
 </tr>
 <tr>
-<td><code>XXX11111.1</code></td> 
-<td><code>Scaf_00000111</code></td> 
-<td><code>12345678</code></td> 
-<td><code>992016</code></td> 
-<td><code>994340</code></td> 
-<td><code>1.63E-114</code></td> 
-<td><code>797</code></td> 
-<td><code>MVLDLKDCFFSIPLAEQDRE...</code></td> 
-<td><code>LILDLKDCFFTIPLHPDD...</code></td> 
-<td><code>1</code></td>
+<td class="data-table-cell"><code>XXX11111.1</code></td> 
+<td class="data-table-cell"><code>Scaf_00000111</code></td> 
+<td class="data-table-cell"><code>12345678</code></td> 
+<td class="data-table-cell"><code>992016</code></td> 
+<td class="data-table-cell"><code>994340</code></td> 
+<td class="data-table-cell"><code>1.63E-114</code></td> 
+<td class="data-table-cell"><code>797</code></td> 
+<td class="data-table-cell"><code>MVLDLKDCFFSIPLAEQDRE...</code></td> 
+<td class="data-table-cell"><code>LILDLKDCFFTIPLHPDD...</code></td> 
+<td class="data-table-cell"><code>1</code></td>
 </tr>
 <tr>
-<td><code>----------</code></td> 
-<td><code>-------------</code></td> 
-<td><code>--------</code></td> 
-<td><code>------</code></td> 
-<td><code>------</code></td> 
-<td><code>---------</code></td> 
-<td><code>---</code></td> 
-<td><code>-----------------------</code></td> 
-<td><code>---------------------</code></td> 
-<td><code>-</code></td> 
+<td class="data-table-cell"><code>----------</code></td> 
+<td class="data-table-cell"><code>-------------</code></td> 
+<td class="data-table-cell"><code>--------</code></td> 
+<td class="data-table-cell"><code>------</code></td> 
+<td class="data-table-cell"><code>------</code></td> 
+<td class="data-table-cell"><code>---------</code></td> 
+<td class="data-table-cell"><code>---</code></td> 
+<td class="data-table-cell"><code>-----------------------</code></td> 
+<td class="data-table-cell"><code>---------------------</code></td> 
+<td class="data-table-cell"><code>-</code></td> 
 </tr>
 <tr>
-<td><code>----------</code></td> 
-<td><code>-------------</code></td> 
-<td><code>--------</code></td> 
-<td><code>------</code></td> 
-<td><code>------</code></td> 
-<td><code>---------</code></td> 
-<td><code>---</code></td> 
-<td><code>-----------------------</code></td> 
-<td><code>---------------------</code></td> 
-<td><code>-</code></td> 
+<td class="data-table-cell"><code>----------</code></td> 
+<td class="data-table-cell"><code>-------------</code></td> 
+<td class="data-table-cell"><code>--------</code></td> 
+<td class="data-table-cell"><code>------</code></td> 
+<td class="data-table-cell"><code>------</code></td> 
+<td class="data-table-cell"><code>---------</code></td> 
+<td class="data-table-cell"><code>---</code></td> 
+<td class="data-table-cell"><code>-----------------------</code></td> 
+<td class="data-table-cell"><code>---------------------</code></td> 
+<td class="data-table-cell"><code>-</code></td> 
 </tr>
 <tr>
-<td><code>----------</code></td> 
-<td><code>-------------</code></td> 
-<td><code>--------</code></td> 
-<td><code>------</code></td> 
-<td><code>------</code></td> 
-<td><code>---------</code></td> 
-<td><code>---</code></td> 
-<td><code>-----------------------</code></td> 
-<td><code>---------------------</code></td> 
-<td><code>-</code></td> 
+<td class="data-table-cell"><code>----------</code></td> 
+<td class="data-table-cell"><code>-------------</code></td> 
+<td class="data-table-cell"><code>--------</code></td> 
+<td class="data-table-cell"><code>------</code></td> 
+<td class="data-table-cell"><code>------</code></td> 
+<td class="data-table-cell"><code>---------</code></td> 
+<td class="data-table-cell"><code>---</code></td> 
+<td class="data-table-cell"><code>-----------------------</code></td> 
+<td class="data-table-cell"><code>---------------------</code></td> 
+<td class="data-table-cell"><code>-</code></td> 
 </tr>
 </table>
 

@@ -5,3 +5,7 @@
 .data-table {
     width: 100%;
 }
+
+.data-table-cell {
+    white-space: nowrap;
+}
