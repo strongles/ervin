@@ -25,49 +25,41 @@ It will then provide a `.tsv` file on a per-fasta-record basis, output to the di
 <th>Default</th>
 </tr>
 <tr>
-<td><code>-f</code></td>
-<td><code>--file</code></td>
-<td>Source fasta file containing the sample probe records to run through tblastn</td>
-<td><code>Filepath</code></td>
-<td>True</td>
-<td></td>
+<td class="data-table-cell"><code>-f</code></td>
+<td class="data-table-cell"><code>--file</code></td>
+<td class="data-table-cell">Source fasta file containing the sample probe records to run through tblastn</td>
+<td class="data-table-cell"><code>Filepath</code></td>
+<td class="data-table-cell">True</td>
+<td class="data-table-cell"></td>
 <tr>
 <tr>
-<td><code>-db</code></td>
-<td><code>--database_path</code></td>
-<td>Path to the genome database against which the probe records are to be BLASTed</td>
-<td><code>str</code></td>
-<td>True</td>
-<td></td>
+<td class="data-table-cell"><code>-db</code></td>
+<td class="data-table-cell"><code>--database_path</code></td>
+<td class="data-table-cell">Path to the genome database against which the probe records are to be BLASTed</td>
+<td class="data-table-cell"><code>str</code></td>
+<td class="data-table-cell">True</td>
+<td class="data-table-cell"></td>
 <tr>
 <tr>
-<td><code>-o</code></td>
-<td><code>--output_dir</code></td>
-<td>Location to which to write the result files</td>
-<td><code>str</code></td>
-<td>False</td>
-<td><code>&lt;current_working_directory&gt;/OUTPUT</code></td>
+<td class="data-table-cell"><code>-o</code></td>
+<td class="data-table-cell"><code>--output_dir</code></td>
+<td class="data-table-cell">Location to which to write the result files</td>
+<td class="data-table-cell"><code>str</code></td>
+<td class="data-table-cell">False</td>
+<td class="data-table-cell"><code>&lt;current_working_directory&gt;/OUTPUT</code></td>
 <tr>
 <tr>
-<td><code>-a</code></td>
-<td><code>--file</code></td>
-<td>Minimum length threshold that BLAST result alignment sequence lengths should exceed</td>
-<td><code>int</code></td>
-<td>False</td>
-<td><code>400</code></td>
+<td class="data-table-cell"><code>-a</code></td>
+<td class="data-table-cell"><code>--alignment_length_threshold</code></td>
+<td class="data-table-cell">Minimum length threshold that BLAST result alignment sequence lengths should exceed</td>
+<td class="data-table-cell"><code>int</code></td>
+<td class="data-table-cell">False</td>
+<td class="data-table-cell"><code>400</code></td>
 <tr>
 
 </table>
 </div>
 
-| Argument | Verbose | Description | Type | Required | Default |
-|:--------:|:-------:| ----------- |:----:|:--------:|:-------:|
-| `-f`       | `--file`  | Source fasta file containing the sample probe records to run through tblastn | `Filepath` | True | N/A |
-| `-db`      | `--database_path` | Path to the genome database against which the probe records are to be BLASTed | `str` |True | N/A |
-| `-o`       | `--output_dir` | Location to which to write the result files | `str` | False | `<current_working_directory>/OUTPUT` |
-| `-a`       | `--alignment_length_threshold` | Minimum length threshold that BLAST result alignment sequence lengths should exceed | `int` | False | `400` | 
-
-</div>
 
 #### Example
 
