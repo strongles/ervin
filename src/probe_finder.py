@@ -1,6 +1,7 @@
+from ervin_utils import format_timestamp_for_filename
 from exceptions import InvalidPathException
 from probe_data import ProbeData
-from ervin_utils import format_timestamp_for_filename
+import progressbar
 import argparse
 import os
 
