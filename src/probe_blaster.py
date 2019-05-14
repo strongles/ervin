@@ -126,7 +126,6 @@ def run():
     probe_records = read_probe_records_from_file(args.file.name)
     run_time = format_timestamp_for_filename()
     with progressbar.ProgressBar(max_value=len(probe_records), type="percentage") as bar:
-        bar.update(0)
         for count, probe_record in enumerate(probe_records):
             blast_result = run_blast(probe_record, args.database_path, args.e_value)
             filtered_results = filter_results(blast_result, args)
