@@ -13,26 +13,37 @@ TEMP_TBLASTN_OUTPUT = "/tmp/temp_tblastn.tsv"
 DEFAULT_OUTPUT_DIR = os.path.join(os.getcwd(), "OUTPUT")
 
 DEFAULT_ALIGNMENT_LENGTH_THRESHOLD = 400
+DEFAULT_E_VALUE_THRESHOLD = 0.009
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--file",
-                        help="Source fasta file containing the sample probe records to run through tblastn",
+                        help="Source fasta file containing the sample "
+                             "probe records to run through tblastn",
                         type=argparse.FileType('r'),
                         required=True)
     parser.add_argument('-db', "--database_path",
-                        help="Path to the genome database against which the probe records are to be BLASTed",
+                        help="Path to the genome database against which "
+                             "the probe records are to be BLASTed",
                         type=str,
                         required=True)
     parser.add_argument("-o", "--output_dir",
                         help="Location to which to write the result files",
                         type=str,
                         required=False)
-    parser.add_argument("-a", "--alignment_threshold",
-                        help="Minimum length threshold that BLAST result alignment sequence lengths should exceed",
+    parser.add_argument("-a", "--alignment_len_threshold",
+                        help="Minimum length threshold that BLAST result "
+                             "alignment sequence lengths should exceed",
                         type=int,
-                        required=False)
+                        required=False,
+                        default=DEFAULT_ALIGNMENT_LENGTH_THRESHOLD)
+    parser.add_argument("-e", "--e_value",
+                        help="Maximum e-value by which to threshold the "
+                             "results returned by the BLAST run",
+                        type=float,
+                        required=False,
+                        default=DEFAULT_E_VALUE_THRESHOLD)
     return parser.parse_args()
 
 
@@ -66,16 +77,14 @@ def print_probe_to_temp_fasta_file(probe):
         fasta_outfile.write(f"{probe['title']}\n{probe['seq']}\n")
 
 
-def run_blast(probe, db):
+def run_blast(probe, db, e_value_threshold):
     print_probe_to_temp_fasta_file(probe)
     command = NcbiblastnCommandline(cmd="tblastn",
                                     out=TEMP_TBLASTN_OUTPUT,
                                     outfmt="\"6 qseqid sseqid slen sstart send evalue length qseq sseq sframe\"",
-                                    # outfmt=15,
-                                    # outfmt=6,
                                     query=TEMP_FASTA_FILE,
                                     db=db,
-                                    evalue=0.009)
+                                    evalue=e_value_threshold)
     command()
     probe_records = []
     with open(TEMP_TBLASTN_OUTPUT) as blast_output:
@@ -85,12 +94,7 @@ def run_blast(probe, db):
 
 
 def _length_requirement(probe_list, args):
-    if args.alignment_threshold is None:
-        align_length = DEFAULT_ALIGNMENT_LENGTH_THRESHOLD
-    else:
-        align_length = args.align_length
-
-    return [probe for probe in probe_list if probe.alignment_length > align_length]
+    return [probe for probe in probe_list if probe.alignment_length > args.alignment_len_threshold]
 
 
 def filter_results(hits, args):
@@ -124,7 +128,7 @@ def run():
     with progressbar.ProgressBar(max_value=len(probe_records), type="percentage") as bar:
         bar.update(0)
         for count, probe_record in enumerate(probe_records):
-            blast_result = run_blast(probe_record, args.database_path)
+            blast_result = run_blast(probe_record, args.database_path, args.e_value)
             filtered_results = filter_results(blast_result, args)
             print_results(filtered_results, probe_record["title"], run_time, args.output_dir)
             bar.update(count)
