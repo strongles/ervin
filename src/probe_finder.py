@@ -66,7 +66,16 @@ class ProbeData:
         return hash(repr(self))
 
     def __lt__(self, other):
-        return self.scaffold < other.scaffold
+        if self.accession_id < other.accession_id:
+            return True
+        elif self.scaffold < other.scaffold:
+            return True
+        elif self.start < other.start:
+            return True
+        elif self.end < other.end:
+            return True
+        else:
+            return False
 
     def to_fasta(self):
         if self.direction == "P":
