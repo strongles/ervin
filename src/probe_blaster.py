@@ -1,16 +1,12 @@
 from Bio.Blast.Applications import NcbiblastnCommandline
-from ervin_utils import format_timestamp_for_filename
+from ervin_utils import format_timestamp_for_filename, read_from_fasta_file, TEMP_FASTA_FILE, \
+    TEMP_TBLASTN_OUTPUT, DEFAULT_OUTPUT_DIR
 from exceptions import InvalidPathException
 from probe_data import ProbeData
 import progressbar
 import argparse
 import os
 
-
-TEMP_FASTA_FILE = "/tmp/temp.fasta"
-TEMP_TBLASTN_OUTPUT = "/tmp/temp_tblastn.tsv"
-
-DEFAULT_OUTPUT_DIR = os.path.join(os.getcwd(), "OUTPUT")
 
 DEFAULT_ALIGNMENT_LENGTH_THRESHOLD = 400
 DEFAULT_E_VALUE_THRESHOLD = 0.009
@@ -45,31 +41,6 @@ def parse_args():
                         required=False,
                         default=DEFAULT_E_VALUE_THRESHOLD)
     return parser.parse_args()
-
-
-def read_and_sanitise_raw_data(filename):
-    with open(filename) as fasta_input:
-        raw_data = fasta_input.readlines()
-    stripped_newlines_data = [line.strip() for line in raw_data]
-    purged_empty_lines_data = [line for line in stripped_newlines_data if line != ""]
-    return purged_empty_lines_data
-
-
-def read_probe_records_from_file(filename):
-    input_data = read_and_sanitise_raw_data(filename)
-    fasta_titles = [line for line in input_data if ">" in line]
-    title_indices = [input_data.index(title) for title in fasta_titles]
-    parsed_file_data = []
-    for i in range(len(title_indices)):
-        try:
-            sequence = "".join(input_data[title_indices[i]+1:title_indices[i+1]])
-            record = {"title": input_data[title_indices[i]], "seq": sequence}
-            parsed_file_data.append(record)
-        except IndexError:
-            sequence = "".join(input_data[title_indices[i] + 1:])
-            record = {"title": input_data[title_indices[i]], "seq": sequence}
-            parsed_file_data.append(record)
-    return parsed_file_data
 
 
 def print_probe_to_temp_fasta_file(probe):
@@ -124,7 +95,7 @@ def print_results(result_list, title, run_time, output_dir):
 
 def run():
     args = parse_args()
-    probe_records = read_probe_records_from_file(args.file.name)
+    probe_records = read_from_fasta_file(args.file.name)
     run_time = format_timestamp_for_filename()
     with progressbar.ProgressBar(max_value=len(probe_records), type="percentage") as bar:
         for count, probe_record in enumerate(probe_records):
