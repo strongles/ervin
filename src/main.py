@@ -37,7 +37,7 @@ def parse_input_file(filepath):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--file",
-                        help="File containing genome segment defintitions",
+                        help="File containing genome segment definitions",
                         type=str,
                         required=True),
     parser.add_argument("-res", "--range_expansion_size",
