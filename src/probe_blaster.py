@@ -18,11 +18,13 @@ DEFAULT_ALIGNMENT_LENGTH_THRESHOLD = 400
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--file",
-                        help="Source fasta file containing the sample probe records to run through tblastn",
+                        help="Source fasta file containing the sample "
+                             "probe records to run through tblastn",
                         type=argparse.FileType('r'),
                         required=True)
     parser.add_argument('-db', "--database_path",
-                        help="Path to the genome database against which the probe records are to be BLASTed",
+                        help="Path to the genome database against which "
+                             "the probe records are to be BLASTed",
                         type=str,
                         required=True)
     parser.add_argument("-o", "--output_dir",
@@ -30,7 +32,8 @@ def parse_args():
                         type=str,
                         required=False)
     parser.add_argument("-a", "--alignment_length_threshold",
-                        help="Minimum length threshold that BLAST result alignment sequence lengths should exceed",
+                        help="Minimum length threshold that BLAST result "
+                             "alignment sequence lengths should exceed",
                         type=int,
                         required=False)
     return parser.parse_args()
@@ -70,7 +73,8 @@ def run_blast(probe, db):
     print_probe_to_temp_fasta_file(probe)
     command = NcbiblastnCommandline(cmd="tblastn",
                                     out=TEMP_TBLASTN_OUTPUT,
-                                    outfmt="\"6 qseqid sseqid slen sstart send evalue length qseq sseq sframe\"",
+                                    outfmt="\"6 qseqid sseqid slen sstart send evalue "
+                                           "length qseq sseq sframe\"",
                                     # outfmt=15,
                                     # outfmt=6,
                                     query=TEMP_FASTA_FILE,

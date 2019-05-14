@@ -1,4 +1,4 @@
-from exceptions import InvalidPathException, IncompleteArgsException
+from exceptions import InvalidPathException
 from probe_data import ProbeData
 from ervin_utils import format_timestamp_for_filename
 import argparse
@@ -48,8 +48,12 @@ def set_up_output_files(output_dir):
 
 
 def unique_scaffolds(source_one, source_two):
-    source_one_uniques = [scaffold for scaffold in source_one.keys() if scaffold not in source_two.keys()]
-    source_two_uniques = [scaffold for scaffold in source_two.keys() if scaffold not in source_one.keys()]
+    source_one_uniques = [
+        scaffold for scaffold in source_one.keys() if scaffold not in source_two.keys()
+    ]
+    source_two_uniques = [
+        scaffold for scaffold in source_two.keys() if scaffold not in source_one.keys()
+    ]
     return_dict = {}
     for unique in source_one_uniques:
         return_dict[unique] = source_one[unique]
@@ -81,7 +85,8 @@ def find_probes(first_probe_data, second_probe_data):
                     current_print_candidate = comparitor
                 elif current_print_candidate.is_near_neighbour(comparitor) \
                         or current_print_candidate.is_range_extension(comparitor):
-                    current_print_candidate = ProbeData.merge_records(current_print_candidate, comparitor)
+                    current_print_candidate = ProbeData.merge_records(current_print_candidate,
+                                                                      comparitor)
             if scaffold not in output_data:
                 output_data[scaffold] = {current_print_candidate}
             else:
@@ -97,7 +102,8 @@ def find_probes_recursively(file_list, tail=None):
         if len(file_list) == 2:
             return find_probes(first_probe_data, second_probe_data)
         elif len(file_list) < 2:
-            return find_probes_recursively(file_list[2:], tail=find_probes(first_probe_data, second_probe_data))
+            return find_probes_recursively(file_list[2:],
+                                           tail=find_probes(first_probe_data, second_probe_data))
     else:
         probe_data = read_probe_records_from_file(file_list[0])
 
