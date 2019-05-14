@@ -32,7 +32,6 @@ def parse_args():
                         help="Location to which to write the result files",
                         type=str,
                         required=False)
-
     parser.add_argument("-a", "--alignment_len_threshold",
                         help="Minimum length threshold that BLAST result "
                              "alignment sequence lengths should exceed",
