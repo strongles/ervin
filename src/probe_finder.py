@@ -1,6 +1,7 @@
+from ervin_utils import format_timestamp_for_filename
 from exceptions import InvalidPathException
 from probe_data import ProbeData
-from ervin_utils import format_timestamp_for_filename
+import progressbar
 import argparse
 import os
 
@@ -72,28 +73,49 @@ def flatten_results(result_data):
 
 
 def find_probes(first_probe_data, second_probe_data):
-    # first_probe_data = read_probe_records_from_file(input_file_one)
-    # second_probe_data = read_probe_records_from_file(input_file_two)
     # Add any scaffolds which don't appear in the other file automatically
     output_data = unique_scaffolds(first_probe_data, second_probe_data)
 
     for scaffold, records in first_probe_data.items():
-        for record in records:
-            current_print_candidate = record
-            for comparitor in second_probe_data[scaffold]:
-                if current_print_candidate.is_superset(comparitor):
-                    current_print_candidate = comparitor
-                elif current_print_candidate.is_near_neighbour(comparitor) \
-                        or current_print_candidate.is_range_extension(comparitor):
-                    current_print_candidate = ProbeData.merge_records(current_print_candidate,
-                                                                      comparitor)
-            if scaffold not in output_data:
-                output_data[scaffold] = {current_print_candidate}
-            else:
-                output_data[scaffold].add(current_print_candidate)
+        with progressbar.ProgressBar(max_value=len(records),
+                                     type="percentage",
+                                     prefix=f"Scaffold: {scaffold} ") as file_bar:
+            for enum, record in enumerate(records):
+                file_bar.update(enum)
+                current_print_candidate = record
+                for comparitor in second_probe_data[scaffold]:
+                    if current_print_candidate.is_superset(comparitor):
+                        current_print_candidate = comparitor
+                    elif current_print_candidate.is_near_neighbour(comparitor) \
+                            or current_print_candidate.is_range_extension(comparitor):
+                        current_print_candidate = ProbeData.merge_records(current_print_candidate,
+                                                                          comparitor)
+                if scaffold not in output_data:
+                    output_data[scaffold] = {current_print_candidate}
+                else:
+                    output_data[scaffold].add(current_print_candidate)
     return output_data
 
 
+def track_recursive_probe_finder_progress(func):
+    try:
+        print(len(progressbars))
+    except NameError:
+        progressbars = {}
+
+    def wrapper(file_list, **kwargs):
+        try:
+            progressbars[func].update(progressbars[func].max_value - len(file_list))
+        except KeyError:
+            progressbars[func] = progressbar.ProgressBar(max_value=len(file_list),
+                                                         type="percentage",
+                                                         prefix="Total Run: ")
+            progressbars[func].update(0)
+        return func(file_list, **kwargs)
+    return wrapper
+
+
+@track_recursive_probe_finder_progress
 def find_probes_recursively(file_list, tail=None):
     if tail is None:
         first_probe_data = read_probe_records_from_file(file_list[0])
