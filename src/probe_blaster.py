@@ -1,11 +1,11 @@
 from Bio.Blast.Applications import NcbiblastnCommandline
 from ervin_utils import format_timestamp_for_filename
+from exceptions import InvalidPathException
 from probe_data import ProbeData
 import progressbar
 import argparse
 import os
 
-from exceptions import InvalidPathException
 
 TEMP_FASTA_FILE = "/tmp/temp.fasta"
 TEMP_TBLASTN_OUTPUT = "/tmp/temp_tblastn.tsv"
