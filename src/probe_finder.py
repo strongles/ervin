@@ -67,44 +67,51 @@ def flatten_results(result_data):
     return sorted(result_list)
 
 
-def find_probes(first_probe_data, second_probe_data):
-    # first_probe_data = read_probe_records_from_file(input_file_one)
-    # second_probe_data = read_probe_records_from_file(input_file_two)
-    # Add any scaffolds which don't appear in the other file automatically
+def is_align_length_threshold_satisfied(args, record):
+    if args.alignment_len_threshold is None:
+        return True
+    elif record.alignment_length > args.alignment_len_threshold:
+        return True
+    else:
+        return False
+
+
+def find_probes(args, first_probe_data, second_probe_data):
     output_data = unique_scaffolds(first_probe_data, second_probe_data)
 
     for scaffold, records in first_probe_data.items():
         for record in records:
-            current_print_candidate = record
-            for comparitor in second_probe_data[scaffold]:
-                if current_print_candidate.is_superset(comparitor):
-                    current_print_candidate = comparitor
-                elif current_print_candidate.is_near_neighbour(comparitor) \
-                        or current_print_candidate.is_range_extension(comparitor):
-                    current_print_candidate = ProbeData.merge_records(current_print_candidate, comparitor)
-            if scaffold not in output_data:
-                output_data[scaffold] = {current_print_candidate}
-            else:
-                output_data[scaffold].add(current_print_candidate)
+            if is_align_length_threshold_satisfied(args, record):
+                current_print_candidate = record
+                for comparitor in second_probe_data[scaffold]:
+                    if current_print_candidate.is_superset(comparitor):
+                        current_print_candidate = comparitor
+                    elif current_print_candidate.is_near_neighbour(comparitor) \
+                            or current_print_candidate.is_range_extension(comparitor):
+                        current_print_candidate = ProbeData.merge_records(current_print_candidate, comparitor)
+                if scaffold not in output_data:
+                    output_data[scaffold] = {current_print_candidate}
+                else:
+                    output_data[scaffold].add(current_print_candidate)
     return output_data
 
 
-def find_probes_recursively(file_list, tail=None):
+def find_probes_recursively(file_list, args, tail=None):
     if tail is None:
         first_probe_data = read_probe_records_from_file(file_list[0])
         second_probe_data = read_probe_records_from_file(file_list[1])
 
         if len(file_list) == 2:
-            return find_probes(first_probe_data, second_probe_data)
-        elif len(file_list) > 2:
-            return find_probes_recursively(file_list[2:], tail=find_probes(first_probe_data, second_probe_data))
+            return find_probes(args, first_probe_data, second_probe_data)
+        elif len(file_list) < 2:
+            return find_probes_recursively(file_list[2:], args, tail=find_probes(args, first_probe_data, second_probe_data))
     else:
         probe_data = read_probe_records_from_file(file_list[0])
 
         if len(file_list) == 1:
             return find_probes(tail, probe_data)
         else:
-            return find_probes_recursively(file_list[1:], tail=find_probes(tail, probe_data))
+            return find_probes_recursively(file_list[1:], args, tail=find_probes(args, tail, probe_data))
 
 
 def read_filenames_from_manifest(manifest):
@@ -120,10 +127,10 @@ def run():
         if len(input_files) == 1:
             raise Exception("Uneccessary run with only one file provided.")
         elif len(input_files) > 1:
-            result = find_probes_recursively(input_files)
+            result = find_probes_recursively(input_files, args)
     else:
         file_list = read_filenames_from_manifest(args.manifest.name)
-        result = find_probes_recursively(file_list)
+        result = find_probes_recursively(file_list, args)
 
     if result is not None:
         result_data = flatten_results(result)
@@ -138,6 +145,11 @@ def parse_args():
     parser.add_argument("-o", "--output_dir",
                         help="Directory in which to create the output files",
                         type=str,
+                        required=False)
+    parser.add_argument("-a", "--alignment_len_threshold",
+                        help="Minimum length threshold that BLAST result "
+                             "alignment sequence lengths should exceed",
+                        type=int,
                         required=False)
     file_sourcing = parser.add_mutually_exclusive_group(required=True)
     file_sourcing.add_argument("-f", "--file_list",
