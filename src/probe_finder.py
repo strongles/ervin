@@ -96,7 +96,7 @@ def find_probes_recursively(file_list, tail=None):
 
         if len(file_list) == 2:
             return find_probes(first_probe_data, second_probe_data)
-        elif len(file_list) < 2:
+        elif len(file_list) > 2:
             return find_probes_recursively(file_list[2:], tail=find_probes(first_probe_data, second_probe_data))
     else:
         probe_data = read_probe_records_from_file(file_list[0])
