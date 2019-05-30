@@ -1,7 +1,8 @@
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
-from src.exceptions import *
-from src.defaults import *
+from src.exceptions import BadConfigFormatException, IncompleteArgsException
+from src.defaults import CONFIG_FILEPATH, NEWLINE, TEMP_BLASTN_OUTPUT, TEMP_FASTA_FILE, LTR_LOWER, \
+    LTR_UPPER, LTR_OUTFILE, ENV_UPPER
 from src.scaf_file import ScafRecord
 import argparse
 import json
@@ -41,7 +42,8 @@ def parse_args():
                         type=str,
                         required=True),
     parser.add_argument("-res", "--range_expansion_size",
-                        help="the number of positions by which to expand the selection window from the genome",
+                        help="the number of positions by which to expand "
+                             "the selection window from the genome",
                         type=int)
     parser.add_argument("-ff", "--fasta_filepath",
                         help="filepath to the fasta db to query for the full genome sequence",
@@ -61,7 +63,8 @@ def parse_args():
     #                     type=str,
     #                     required=True)
     # parser.add_argument("-res", "--range_expansion_size",
-    #                     help="the number of positions by which to expand the selection window from the genome",
+    #                     help="the number of positions by which to expand the
+    #                     selection window from the genome",
     #                     type=int)
     # parser.add_argument("-rs", "--range_size",
     #                     help="TODO: Figure out what this is for",
@@ -85,10 +88,12 @@ def get_conf_settings():
 
 
 def validate_settings(conf_settings, parsed_args):
-    validation = {arg: (arg not in conf_settings and arg not in parsed_args) for arg in REQUIRED_ARGS}
+    validation = {arg: (arg not in conf_settings and arg not in parsed_args)
+                  for arg in REQUIRED_ARGS}
     print(validation)
     if any([(arg not in conf_settings and arg not in parsed_args) for arg in REQUIRED_ARGS]):
-        raise IncompleteArgsException(f"Args missing. Ensure all are provided: \n{NEWLINE.join(REQUIRED_ARGS)}")
+        raise IncompleteArgsException(f"Args missing. Ensure all are provided: "
+                                      f"\n{NEWLINE.join(REQUIRED_ARGS)}")
     # parsed_args.__dict__()
     return {**conf_settings, **vars(parsed_args)}
     # return dict(conf_settings, **parsed_args)
@@ -127,8 +132,6 @@ def read_blast_result_from_file():
 
 
 def get_blast_results():
-    # Filering out some of the bumf of unecessary nesting here, as nothing before the report data is really meaningful
-    # I'm looking at you XML
     blast_data = read_blast_result_from_file()["BlastOutput2"][0]["report"]
     return blast_data["results"]["bl2seq"][0]
 
@@ -173,7 +176,8 @@ def determine_ltr_hits(blast_results, db_path):
         # print(f"Original start: {parsed_title[1]} Original end: {parsed_title[2]}")
         # print(f"Internal start: {start_point} Internal end: {end_point}")
         print(f"Extracted sequence length: {start}-{end} = {end- start}")
-        print(f"Full sequence start and end: {full_segment_start}-{full_segment_end} Sequence length should be {full_segment_end-full_segment_start}")
+        print(f"Full sequence start and end: {full_segment_start}-{full_segment_end} "
+              f"Sequence length should be {full_segment_end-full_segment_start}")
         if full_segment_end - full_segment_start <= ENV_UPPER:
             scaf_record = ScafRecord(accession_id=parsed_title["acc_id"],
                                      first_position=full_segment_start,
@@ -205,7 +209,8 @@ def run():
         scaf_record = ScafRecord(accession_id=record["accession_id"],
                                  first_position=new_range_start,
                                  second_position=new_range_end,
-                                 segment=get_from_db(new_range_start, new_range_end, record["accession_id"], db_filepath))
+                                 segment=get_from_db(new_range_start, new_range_end,
+                                                     record["accession_id"], db_filepath))
         write_result_to_tempfile(scaf_record)
         run_blast_against_tempfile()
         blast_results = get_blast_results()

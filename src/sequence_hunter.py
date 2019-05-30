@@ -12,7 +12,8 @@ class ScafRecord:
     end: int
     direction: str
 
-    def __init__(self, record_line=None, accession_id=None, first_position=None, second_position=None):
+    def __init__(self, record_line=None, accession_id=None,
+                 first_position=None, second_position=None):
         if record_line is not None:
             line_tokens = record_line.strip().split("\t")
             accession_id = line_tokens[0]
@@ -32,7 +33,8 @@ class ScafRecord:
 def construct_file_line(scaf_record, segment):
     if scaf_record.direction == "N":
         segment = segment[::-1]
-    return f">{scaf_record.accession_id}_{scaf_record.start}_{scaf_record.end}_{scaf_record.direction}\n{segment}\n"
+    return f">{scaf_record.accession_id}_{scaf_record.start}_{scaf_record.end}_" \
+        f"{scaf_record.direction}\n{segment}\n"
 
 
 def find_sequence_segments():
@@ -46,7 +48,8 @@ def find_sequence_segments():
                 if seq_record.id in scaf_records.keys():
                     scaf_record = scaf_records[seq_record.id]
                     output_file_writer.write(
-                        construct_file_line(scaf_record, str(seq_record.seq[scaf_record.start:scaf_record.end])))
+                        construct_file_line(scaf_record,
+                                            str(seq_record.seq[scaf_record.start:scaf_record.end])))
 
 
 if __name__ == "__main__":

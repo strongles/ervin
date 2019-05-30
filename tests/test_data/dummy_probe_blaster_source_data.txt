@@ -1,0 +1,10 @@
+>something
+a
+multi
+line
+sequence
+
+>something else
+another
+shorter
+sequence

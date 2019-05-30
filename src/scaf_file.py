@@ -6,7 +6,12 @@ class ScafRecord:
     direction: str
     segment: str
 
-    def __init__(self, record_line=None, accession_id=None, first_position=None, second_position=None, segment=None):
+    def __init__(self,
+                 record_line=None,
+                 accession_id=None,
+                 first_position=None,
+                 second_position=None,
+                 segment=None):
         if record_line is not None:
             line_tokens = record_line.strip().split("\t")
             accession_id = line_tokens[0]
