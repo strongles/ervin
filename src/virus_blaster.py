@@ -39,7 +39,8 @@ def get_blast_results(data):
             result_handle = NCBIWWW.qblast("tblastn", "refseq_genomic",
                                            datum["seq"], hitlist_size=1,
                                            entrez_query=f"txid{VIRUS_DATABASE_ID}[ORGN]")
-            # Due to the hitlist size sent to the API, we only care about the very first result in this
+            # Due to the hitlist size sent to the API,
+            # we only care about the very first result in this
             blast_result = next(NCBIXML.parse(result_handle))
             hit_descriptions = blast_result.descriptions
             if len(hit_descriptions) > 0:

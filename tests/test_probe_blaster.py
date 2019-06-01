@@ -1,5 +1,5 @@
 from unittest import TestCase
-from probe_blaster import read_and_sanitise_raw_data, read_probe_records_from_file
+from ervin_utils import read_and_sanitise_raw_data, read_from_fasta_file
 from mock import patch, mock_open
 import os
 
@@ -32,7 +32,7 @@ class TestProbeBlaster(TestCase):
         actual_data = read_and_sanitise_raw_data("some_filename")
         self.assertListEqual(expected_data, actual_data)
 
-    @patch("probe_blaster.read_and_sanitise_raw_data", return_value=dummy_expected_sanitised_data())
+    @patch("ervin_utils.read_and_sanitise_raw_data", return_value=dummy_expected_sanitised_data())
     def test_read_probe_records(self, mock_read_data):
         expected_records = [
             {
@@ -44,6 +44,6 @@ class TestProbeBlaster(TestCase):
                 "seq": "anothershortersequence"
             }
         ]
-        actual_records = read_probe_records_from_file("filename")
+        actual_records = read_from_fasta_file("filename")
         mock_read_data.assert_called_once_with("filename")
         self.assertListEqual(expected_records, actual_records)
