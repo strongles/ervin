@@ -41,28 +41,34 @@ def get_blast_results(data):
                                            entrez_query=f"txid{VIRUS_DATABASE_ID}[ORGN]")
             # Due to the hitlist size sent to the API, we only care about the very first result in this
             blast_result = next(NCBIXML.parse(result_handle))
-            result_title = blast_result.descriptions[0].title
+            hit_descriptions = blast_result.descriptions
+            if len(hit_descriptions) > 0:
+                result_title = hit_descriptions[0].title
+            else:
+                result_title = "not_found"
             if result_title not in result_set:
                 result_set[result_title] = [datum]
             else:
                 result_set[result_title].append(datum)
+
         return result_set
 
 
-def print_virus_results_to_file(virus_name, result_list):
-    filename = Path(DEFAULT_OUTPUT_DIR) / f"{virus_name}_{format_timestamp_for_filename()}.fasta"
+def print_virus_results_to_file(virus_name, result_list, run_ts):
+    filename = Path(DEFAULT_OUTPUT_DIR) / f"{virus_name}_{run_ts}.fasta"
     print_to_fasta_file(filename, result_list)
 
 
 def run():
     args = parse_args()
+    run_stamp = format_timestamp_for_filename()
     input_data = get_data_from_all_files(args)
     with progressbar.ProgressBar(max_value=len(input_data), type="percentage") as outer_bar:
         for enum, file_data in enumerate(input_data):
             outer_bar.update(enum)
             blast_results = get_blast_results(file_data)
             for result_set in blast_results:
-                print_virus_results_to_file(result_set, blast_results[result_set])
+                print_virus_results_to_file(result_set, blast_results[result_set], run_stamp)
 
 
 if __name__ == "__main__":

@@ -86,7 +86,7 @@ def print_results(result_list, title, run_time, output_dir):
             raise InvalidPathException(f"Invalid output path provided: {output_dir}")
         else:
             os.makedirs(output_dir)
-    output_filename = f"{title}_{run_time}.tsv"
+    output_filename = f"{title.replace('>', '')}_{run_time}.tsv"
     output_filepath = os.path.join(output_dir, output_filename)
     with open(output_filepath, 'w') as result_out:
         for result in sorted(result_list):

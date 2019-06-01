@@ -2,8 +2,8 @@ from pathlib import Path
 import datetime
 
 DEFAULT_OUTPUT_DIR = Path.cwd() / "OUTPUT"
-TEMP_FASTA_FILE = Path("/tmp/temp.fasta")
-TEMP_TBLASTN_OUTPUT = Path("/tmp/temp_tblastn.tsv")
+TEMP_FASTA_FILE = "/tmp/temp.fasta"
+TEMP_TBLASTN_OUTPUT = "/tmp/temp_tblastn.tsv"
 NEWLINE = "\n"
 
 
