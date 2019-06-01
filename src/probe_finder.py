@@ -1,11 +1,9 @@
+from ervin_utils import format_timestamp_for_filename, DEFAULT_OUTPUT_DIR
 from exceptions import InvalidPathException
 from probe_data import ProbeData
-from ervin_utils import format_timestamp_for_filename
+import progressbar
 import argparse
 import os
-
-
-DEFAULT_OUTPUT_DIR = os.path.join(os.getcwd(), "OUTPUT")
 
 
 def read_probe_records_from_file(filename):
@@ -31,8 +29,6 @@ def write_to_files(output_files, record):
 
 
 def set_up_output_files(output_dir):
-    if output_dir is None:
-        output_dir = DEFAULT_OUTPUT_DIR
     if not os.path.isdir(output_dir):
         if os.path.exists(output_dir):
             raise InvalidPathException(f"Invalid output path provided: {output_dir}")
@@ -101,6 +97,25 @@ def find_probes(args, first_probe_data, second_probe_data):
     return output_data
 
 
+def track_recursive_probe_finder_progress(func):
+    try:
+        print(len(progressbars))
+    except NameError:
+        progressbars = {}
+
+    def wrapper(file_list, **kwargs):
+        try:
+            progressbars[func].update(progressbars[func].max_value - len(file_list))
+        except KeyError:
+            progressbars[func] = progressbar.ProgressBar(max_value=len(file_list),
+                                                         type="percentage",
+                                                         prefix="Total Run: ")
+            progressbars[func].update(0)
+        return func(file_list, **kwargs)
+    return wrapper
+
+
+@track_recursive_probe_finder_progress
 def find_probes_recursively(file_list, args, tail=None):
     if tail is None:
         first_probe_data = read_probe_records_from_file(file_list[0])
@@ -118,7 +133,7 @@ def find_probes_recursively(file_list, args, tail=None):
         probe_data = read_probe_records_from_file(file_list[0])
 
         if len(file_list) == 1:
-            return find_probes(tail, probe_data)
+            return find_probes(args, tail, probe_data)
         else:
             return find_probes_recursively(file_list[1:], args,
                                            tail=find_probes(args, tail, probe_data))
@@ -155,6 +170,7 @@ def parse_args():
     parser.add_argument("-o", "--output_dir",
                         help="Directory in which to create the output files",
                         type=str,
+                        default=DEFAULT_OUTPUT_DIR,
                         required=False)
     parser.add_argument("-a", "--alignment_len_threshold",
                         help="Minimum length threshold that BLAST result "

@@ -155,5 +155,3 @@ _NB: Column headers are not present in the data output, they are provided here f
 <td class="data-table-cell"><code>-</code></td> 
 </tr>
 </table>
-
-</div>
