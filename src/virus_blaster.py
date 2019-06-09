@@ -164,6 +164,7 @@ def print_virus_results_to_file(virus_name, result_list, run_ts, output_dir):
 
 def run_virus_blaster(filename=None, db=None, output_dir=None):
     run_stamp = format_timestamp_for_filename()
+    update_virus_db()
     input_data = get_data_from_file(filename)
     with progressbar.ProgressBar(max_value=len(input_data),
                                  type="percentage",

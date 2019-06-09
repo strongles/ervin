@@ -21,23 +21,26 @@ MAKE_BLASTDB_CMD = "makeblastdb -in '{db_files}' -title {db_name} -out {out_path
 # Gives us a handle to the ERViN home directory to access things like config files
 ERVIN_DIR = Path(__file__).parent.parent
 CONFIG_PATH = ERVIN_DIR / "config.json"
-SUPPORTED_CONFIG_ARGS = [
+REQUIRED_DIRS = [
     "operational_data_storage",
     "virus_db_storage",
-    "genome_db_storage",
+    "genome_db_storage"
+]
+SUPPORTED_CONFIG_ARGS = [
+    *REQUIRED_DIRS,
     "range_expansion_size",
     "range_size",
     "probe_blaster_align_len_thresh",
-    "probe_blaster_e_value_thresh"
+    "probe_blaster_e_value_thresh",
+    "log_location"
 ]
 
 LOGGER = logging.getLogger(Path(__file__).stem)
 
 
 def decompress_gz_file(filepath):
-    print(filepath)
     dest_file = Path(filepath).with_suffix("")
-    print(dest_file)
+    LOGGER.info(f"Extracting {filepath} to {dest_file}")
     with gzip.GzipFile(filepath, "rb") as archive:
         with open(dest_file, "wb") as extracted:
             extracted.write(archive.read())
@@ -68,6 +71,10 @@ def get_config():
         shutil.copy(f"{CONFIG_PATH}.templ", str(CONFIG_PATH))
     with open(CONFIG_PATH) as config_in:
         config_data = json.load(config_in)
+        for directory in REQUIRED_DIRS:
+            dir_path = Path(homify_path(config_data[directory]))
+            if not dir_path.exists():
+                dir_path.mkdir(parents=True)
     return make_config(config_data)
 
 
