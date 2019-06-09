@@ -1,9 +1,14 @@
-from ervin_utils import format_timestamp_for_filename, DEFAULT_OUTPUT_DIR
-from exceptions import InvalidPathException
-from probe_data import ProbeData
+from src.ervin_utils import format_timestamp_for_filename
+from src.ervin_utils import DEFAULT_OUTPUT_DIR
+from src.ervin_utils import TEMP_PROBE_FINDER
+from src.exceptions import InvalidPathException
+from src.probe_data import ProbeData
+from collections import namedtuple
 import progressbar
 import argparse
 import os
+
+Args = namedtuple("Args", "file_list alignment_len_threshold")
 
 
 def read_probe_records_from_file(filename):
@@ -79,62 +84,52 @@ def is_align_length_threshold_satisfied(args, record):
 def find_probes(args, first_probe_data, second_probe_data):
     output_data = unique_scaffolds(first_probe_data, second_probe_data)
 
-    for scaffold, records in first_probe_data.items():
-        for record in records:
-            if is_align_length_threshold_satisfied(args, record):
-                current_print_candidate = record
-                for comparitor in second_probe_data[scaffold]:
-                    if current_print_candidate.is_superset(comparitor):
-                        current_print_candidate = comparitor
-                    elif current_print_candidate.is_near_neighbour(comparitor) \
-                            or current_print_candidate.is_range_extension(comparitor):
-                        current_print_candidate = ProbeData.merge_records(current_print_candidate,
-                                                                          comparitor)
-                if scaffold not in output_data:
-                    output_data[scaffold] = {current_print_candidate}
-                else:
-                    output_data[scaffold].add(current_print_candidate)
-    return output_data
+    with progressbar.ProgressBar(max_value=len(first_probe_data),
+                                 type="percentage",
+                                 prefix="Filtering and merging: ") as bar:
+        for count, (scaffold, records) in enumerate(first_probe_data.items()):
+            bar.update(count)
+            for record in records:
+                if is_align_length_threshold_satisfied(args, record):
+                    current_print_candidate = record
+                    for comparitor in second_probe_data[scaffold]:
+                        if current_print_candidate.is_superset(comparitor):
+                            current_print_candidate = comparitor
+                        elif current_print_candidate.is_near_neighbour(comparitor) \
+                                or current_print_candidate.is_range_extension(comparitor):
+                            current_print_candidate = ProbeData.merge_records(
+                                current_print_candidate,
+                                comparitor)
+                    if scaffold not in output_data:
+                        output_data[scaffold] = {current_print_candidate}
+                    else:
+                        output_data[scaffold].add(current_print_candidate)
+        return output_data
 
 
-def track_recursive_probe_finder_progress(func):
-    try:
-        print(len(progressbars))
-    except NameError:
-        progressbars = {}
-
-    def wrapper(file_list, **kwargs):
-        try:
-            progressbars[func].update(progressbars[func].max_value - len(file_list))
-        except KeyError:
-            progressbars[func] = progressbar.ProgressBar(max_value=len(file_list),
-                                                         type="percentage",
-                                                         prefix="Total Run: ")
-            progressbars[func].update(0)
-        return func(file_list, **kwargs)
-    return wrapper
-
-
-@track_recursive_probe_finder_progress
 def find_probes_recursively(file_list, args, tail=None):
     if tail is None:
-        first_probe_data = read_probe_records_from_file(file_list[0])
-        second_probe_data = read_probe_records_from_file(file_list[1])
-
-        if len(file_list) == 2:
+        if len(file_list) == 1:
+            first_probe_data = read_probe_records_from_file(file_list[0])
+            second_probe_data = read_probe_records_from_file(file_list[0])
             return find_probes(args, first_probe_data, second_probe_data)
-        elif len(file_list) < 2:
+        elif len(file_list) == 2:
+            first_probe_data = read_probe_records_from_file(file_list[0])
+            second_probe_data = read_probe_records_from_file(file_list[1])
+            return find_probes(args, first_probe_data, second_probe_data)
+        elif len(file_list) > 2:
+            first_probe_data = read_probe_records_from_file(file_list[0])
+            second_probe_data = read_probe_records_from_file(file_list[1])
             return find_probes_recursively(file_list[2:],
                                            args,
                                            tail=find_probes(args,
                                                             first_probe_data,
                                                             second_probe_data))
     else:
-        probe_data = read_probe_records_from_file(file_list[0])
-
-        if len(file_list) == 1:
-            return find_probes(args, tail, probe_data)
+        if len(file_list) == 0:
+            return find_probes(args, tail, tail)
         else:
+            probe_data = read_probe_records_from_file(file_list[0])
             return find_probes_recursively(file_list[1:], args,
                                            tail=find_probes(args, tail, probe_data))
 
@@ -142,27 +137,6 @@ def find_probes_recursively(file_list, args, tail=None):
 def read_filenames_from_manifest(manifest):
     with open(manifest, 'r') as manifest_file:
         return [line.strip() for line in manifest_file.readlines()]
-
-
-def run():
-    args = parse_args()
-    result = None
-    if args.file_list is not None:
-        input_files = [input_file.name for input_file in args.file_list]
-        if len(input_files) == 1:
-            raise Exception("Uneccessary run with only one file provided.")
-        elif len(input_files) > 1:
-            result = find_probes_recursively(input_files, args)
-    else:
-        file_list = read_filenames_from_manifest(args.manifest.name)
-        result = find_probes_recursively(file_list, args)
-
-    if result is not None:
-        result_data = flatten_results(result)
-        output_files = set_up_output_files(args.output_dir)
-        [write_to_files(output_files, output) for output in result_data]
-    else:
-        raise Exception("No results after running probe_finder.")
 
 
 def parse_args():
@@ -188,5 +162,37 @@ def parse_args():
     return parser.parse_args()
 
 
+def run_as_main():
+    args = parse_args()
+    result = None
+    if args.file_list is not None:
+        input_files = [input_file.name for input_file in args.file_list]
+        if len(input_files) == 1:
+            raise Exception("Uneccessary run with only one file provided.")
+        elif len(input_files) > 1:
+            result = find_probes_recursively(input_files, args)
+    else:
+        file_list = read_filenames_from_manifest(args.manifest.name)
+        result = find_probes_recursively(file_list, args)
+
+    if result is not None:
+        result_data = flatten_results(result)
+        output_files = set_up_output_files(args.output_dir)
+        [write_to_files(output_files, output) for output in result_data]
+    else:
+        raise Exception("No results after running probe_finder.")
+
+
+def run_probe_finder(file_list, align_len_threshold):
+    args = Args(file_list, align_len_threshold)
+    result = find_probes_recursively(file_list, args)
+
+    result_data = flatten_results(result)
+    output_files = set_up_output_files(TEMP_PROBE_FINDER)
+    [write_to_files(output_files, output) for output in result_data]
+    return output_files[0]
+
+
 if __name__ == "__main__":
-    run()
+    args = parse_args()
+    run_as_main()
