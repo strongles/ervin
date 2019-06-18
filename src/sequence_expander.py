@@ -88,9 +88,6 @@ def get_conf_settings():
 
 
 def validate_settings(conf_settings, parsed_args):
-    validation = {arg: (arg not in conf_settings and arg not in parsed_args)
-                  for arg in REQUIRED_ARGS}
-    print(validation)
     if any([(arg not in conf_settings and arg not in parsed_args) for arg in REQUIRED_ARGS]):
         raise IncompleteArgsException(f"Args missing. Ensure all are provided: "
                                       f"\n{NEWLINE.join(REQUIRED_ARGS)}")
@@ -112,12 +109,11 @@ def get_from_db(range_start, range_end, accession_id, filepath):
 def run_blast_against_tempfile():
     # outfmt=15 -> JSON
     # outfmt=5 -> XML
-    blast_command = NcbiblastnCommandline(out=TEMP_BLASTN_OUTPUT,
-                                          query=TEMP_FASTA_FILE,
+    blast_command = NcbiblastnCommandline(query=TEMP_FASTA_FILE,
                                           subject=TEMP_FASTA_FILE,
                                           outfmt=15,
                                           strand="both")
-    blast_command()
+    return blast_command()
 
 
 def write_result_to_tempfile(record):
@@ -127,11 +123,6 @@ def write_result_to_tempfile(record):
 def read_blast_result_from_file():
     with open(TEMP_BLASTN_OUTPUT) as blast_file:
         return json.load(blast_file)
-
-
-def get_blast_results():
-    blast_data = read_blast_result_from_file()["BlastOutput2"][0]["report"]
-    return blast_data["results"]["bl2seq"][0]
 
 
 def parse_blast_fasta_title(title):
@@ -144,7 +135,6 @@ def parse_blast_fasta_title(title):
 
 
 def determine_ltr_hits(blast_results, db_path):
-    # print("In determine LTRs")
     ltr_return = []
     blast_score_groups = {}
     for hit in blast_results["hits"][0]["hsps"]:
@@ -152,15 +142,12 @@ def determine_ltr_hits(blast_results, db_path):
             blast_score_groups[hit["bit_score"]] = [hit]
         else:
             blast_score_groups[hit["bit_score"]].append(hit)
-        # print(hit)
-    # print(f"Blast score groups: {blast_score_groups}")
     potential_ltrs = []
     for key, value in blast_score_groups.items():
         print(f"score: {key} hits: {len(value)}")
         if len(value) > 1:
             if LTR_LOWER < value[0]["align_len"] < LTR_UPPER:
                 potential_ltrs.append(value)
-    # print(f"Potential LTRS: {potential_ltrs}")
     for potential_ltr in potential_ltrs:
         start = 0
         end = 0
@@ -194,13 +181,8 @@ def print_ltr_candidates_to_file(ltr_list):
             outfile.write(ltr)
 
 
-def run():
-    args = validate_settings(get_conf_settings(), parse_args())
-    # acc_id = args["accession_id"]
-    # start = args["start"]
-    # end = args["end"]
-    records = parse_input_file(args["file"])
-    db_filepath = args["fasta_filepath"]
+def run_sequence_expander(filename, genome_db):
+    records = parse_input_file(filename)
     ltr_candidates = []
     for record in records:
         new_range_start, new_range_end = compute_ranges(record["start"], record["end"])
@@ -208,14 +190,14 @@ def run():
                                  first_position=new_range_start,
                                  second_position=new_range_end,
                                  segment=get_from_db(new_range_start, new_range_end,
-                                                     record["accession_id"], db_filepath))
+                                                     record["accession_id"], genome_db))
         write_result_to_tempfile(scaf_record)
-        run_blast_against_tempfile()
-        blast_results = get_blast_results()
-        ltr_candidates.extend(determine_ltr_hits(blast_results, db_filepath))
+        blast_results = run_blast_against_tempfile()
+        ltr_candidates.extend(determine_ltr_hits(blast_results, genome_db))
     print_ltr_candidates_to_file(ltr_candidates)
     # TODO: Plug the LTR segments into the VIRUS DB to confirm them further
 
 
 if __name__ == "__main__":
-    run()
+    args = validate_settings(get_conf_settings(), parse_args())
+    run_sequence_expander()
