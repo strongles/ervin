@@ -12,3 +12,4 @@ output/
 *.tsv
 testing.py
 *.png
+*.pyc

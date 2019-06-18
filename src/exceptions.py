@@ -8,3 +8,7 @@ class IncompleteArgsException(Exception):
 
 class InvalidPathException(Exception):
     pass
+
+
+class ArgNotSupportedError(Exception):
+    pass
