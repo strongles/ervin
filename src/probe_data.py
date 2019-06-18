@@ -118,6 +118,9 @@ class ProbeData:
                and self.direction == comparitor.direction \
                and self.frame == comparitor.frame
 
+    def merge_with(self, source):
+        return self.merge_records(self, source)
+
     @staticmethod
     def merge_records(a, b):
         if a.start < b.start:
@@ -132,15 +135,14 @@ class ProbeData:
         }
         if first.end < second.start:
             overrides["scaffold_alignment"] = "".join([first.scaffold_alignment,
-                                                       "N" * ceil((second.start - first.end) / 3),
+                                                       "-" * ceil((second.start - first.end) / 3),
                                                        second.scaffold_alignment])
         elif first.end > second.start:
             overlap = ceil((first.end - second.start) / 3)
             overrides["scaffold_alignment"] = "".join([first.scaffold_alignment,
-                                                       second.scaffold_alignment[:overlap]])
-            # TODO: Align_len possibly (end - start) - count("-") ?
-        align_length = len(overrides["scaffold_alignment"]) - \
-            str.count("-", overrides["scaffold_alignment"])
+                                                       second.scaffold_alignment[overlap:]])
+        align_length = (overrides["end"] - overrides["start"]) - \
+                       overrides["scaffold_alignment"].count("-")
         overrides["alignment_length"] = align_length
         overrides["accession_id"] = first.accession_id + "_" + second.accession_id
         return ProbeData(first, overrides)
