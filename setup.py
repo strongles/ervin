@@ -1,20 +1,11 @@
-import subprocess
 import setuptools
 
-git_version_binary = subprocess.run(["git", "describe"], capture_output=True).stdout
-version = git_version_binary.decode("utf-8").strip()
-
 with open("README.md") as readme:
-    long_desc = readme.read()
-
-with open("requirements.txt") as requires:
-    require_list = [line.strip() for line in requires.readlines()]
-
-print(require_list)
+    long_desc = str(readme.read())
 
 setuptools.setup(
     name="ervin",
-    version=version,
+    version="0.0.3",
     description="ERVin is a collection of tools developed to assist "
                 "in discovering ERV sequences within genomic data",
     long_description=long_desc,
@@ -26,9 +17,17 @@ setuptools.setup(
     },
     licence="GPL-3.0-or-later",
     url="https://github.com/strongles/ervin",
-    download_url=f"https://github.com/strongles/ervin/archive/{version}.tar.gz",
+    download_url="https://github.com/strongles/ervin/archive/0.0.3.tar.gz",
     packages=setuptools.find_packages(),
-    install_requires=require_list,
+    install_requires=[
+            "biopython==1.73"
+            "numpy==1.16.1"
+            "progressbar2==3.39.3"
+            "nose==1.3.7"
+            "mock==3.0.5"
+            "flake8==3.7.7"
+            "ftputil==3.4"
+    ],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
