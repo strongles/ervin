@@ -1,12 +1,16 @@
-from src.ervin_utils import format_timestamp_for_filename
-from src.ervin_utils import DEFAULT_OUTPUT_DIR
-from src.ervin_utils import TEMP_PROBE_FINDER
-from src.exceptions import InvalidPathException
-from src.probe_data import ProbeData
+from .ervin_utils import format_timestamp_for_filename
+from .ervin_utils import DEFAULT_OUTPUT_DIR
+from .ervin_utils import TEMP_PROBE_FINDER
+
+from .exceptions import InvalidPathException
+
+from .probe_data import ProbeData
+
 from collections import namedtuple
-import progressbar
+
 import argparse
 import os
+import progressbar
 
 Args = namedtuple("Args", "file_list alignment_len_threshold")
 

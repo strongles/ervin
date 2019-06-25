@@ -4,6 +4,10 @@ This is a tool to allow for the detection of ERVs in genome segments
 
 This has been designed primarily with a view to be used on OSX, cross-compatibility with other UNIX-based architectures may exist, but it almost certainly will not run on Microsoft Windows systems
 
+### Installation
+
+`pip install ervin`
+
 ### Requirements
 - Python 3.6+ ([Download](https://www.python.org/downloads/))
 - NCBI BLAST suite must be installed locally ([Download](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/))
@@ -83,17 +87,17 @@ ERViN Currently:
 #### Examples
 <div class="data-table-wrapper">
 
-<code>python ervin -f data/fasta_file.fasta -gdb genome_db</code>
+<code>ervin -f data/fasta_file.fasta -gdb genome_db</code>
 
 
-<code>python ervin -f data/fasta_file.fasta -gdb genome_db -o results/probe_blaster_output</code>
+<code>ervin -f data/fasta_file.fasta -gdb genome_db -o results/probe_blaster_output</code>
 
 
-<code>python ervin -f data/fasta_file.fasta -gdb genome_db -o results/probe_blaster_output -a 500</code>
+<code>ervin -f data/fasta_file.fasta -gdb genome_db -o results/probe_blaster_output -a 500</code>
 
 
-<code>python ervin -f data/fasta_file.fasta -gdb genome_db -o results/probe_blaster_output -e 0.0008</code>
+<code>ervin -f data/fasta_file.fasta -gdb genome_db -o results/probe_blaster_output -e 0.0008</code>
 
 
-<code>python ervin -f data/fasta_file.fasta -gdb genome_db -o results/probe_blaster_output -a 800 -e 0.01</code>
+<code>ervin -f data/fasta_file.fasta -gdb genome_db -o results/probe_blaster_output -a 800 -e 0.01</code>
 </div>

@@ -1,7 +1,10 @@
+from .exceptions import ArgNotSupportedError
+from .templates.config_template import CONFIG_TEMPLATE
+
 from collections import namedtuple
-from src.exceptions import ArgNotSupportedError
 from functools import lru_cache
 from pathlib import Path
+
 import gzip
 import json
 import logging
@@ -19,8 +22,8 @@ VIRUS_DB_SERVER = "ftp.ncbi.nlm.nih.gov"
 VIRUS_DB_SERVER_DIR = "refseq/release/viral/"
 MAKE_BLASTDB_CMD = "makeblastdb -in '{db_files}' -title {db_name} -out {out_path} -dbtype nucl"
 # Gives us a handle to the ERViN home directory to access things like config files
-ERVIN_DIR = Path(__file__).parent.parent
-CONFIG_PATH = ERVIN_DIR / "config.json"
+# ERVIN_DIR = Path(__file__).parent.parent
+CONFIG_PATH = Path.home() / ".ervin/config.json"
 REQUIRED_DIRS = [
     "operational_data_storage",
     "virus_db_storage",
@@ -52,7 +55,10 @@ def decompress_gz_files(file_list):
 
 
 def homify_path(path_string):
-    return path_string.replace("~", str(Path.home()))
+    if path_string.startswith("~"):
+        return path_string.replace("~", str(Path.home()), 1)
+    else:
+        return path_string
 
 
 def make_config(elem_dict):
@@ -68,7 +74,10 @@ def make_config(elem_dict):
 @lru_cache(maxsize=None)
 def get_config():
     if not CONFIG_PATH.exists():
-        shutil.copy(f"{CONFIG_PATH}.templ", str(CONFIG_PATH))
+        if not CONFIG_PATH.parent.exists():
+            CONFIG_PATH.parent.mkdir(parents=True)
+        with open(CONFIG_PATH, 'w') as config_writer:
+            json.dump(CONFIG_TEMPLATE, config_writer)
     with open(CONFIG_PATH) as config_in:
         config_data = json.load(config_in)
         for directory in REQUIRED_DIRS:

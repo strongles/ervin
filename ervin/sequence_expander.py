@@ -1,9 +1,19 @@
+from .defaults import CONFIG_FILEPATH
+from .defaults import NEWLINE
+from .defaults import TEMP_BLASTN_OUTPUT
+from .defaults import TEMP_FASTA_FILE
+from .defaults import LTR_LOWER
+from .defaults import LTR_UPPER
+from .defaults import LTR_OUTFILE
+from .defaults import ENV_UPPER
+
+from .exceptions import BadConfigFormatException, IncompleteArgsException
+
+from .scaf_file import ScafRecord
+
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
-from src.exceptions import BadConfigFormatException, IncompleteArgsException
-from src.defaults import CONFIG_FILEPATH, NEWLINE, TEMP_BLASTN_OUTPUT, TEMP_FASTA_FILE, LTR_LOWER, \
-    LTR_UPPER, LTR_OUTFILE, ENV_UPPER
-from src.scaf_file import ScafRecord
+
 import argparse
 import json
 import os

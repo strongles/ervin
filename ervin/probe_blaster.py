@@ -1,17 +1,21 @@
+from .ervin_utils import get_config
+from .ervin_utils import format_timestamp_for_filename
+from .ervin_utils import read_from_fasta_file
+from .ervin_utils import TEMP_FASTA_FILE
+from .ervin_utils import TEMP_TBLASTN_OUTPUT
+from .ervin_utils import DEFAULT_OUTPUT_DIR
+from .ervin_utils import TEMP_PROBE_BLASTER
+
+from .exceptions import InvalidPathException
+
+from .probe_data import ProbeData
+
 from Bio.Blast.Applications import NcbiblastnCommandline
-from src.ervin_utils import get_config
-from src.ervin_utils import format_timestamp_for_filename
-from src.ervin_utils import read_from_fasta_file
-from src.ervin_utils import TEMP_FASTA_FILE
-from src.ervin_utils import TEMP_TBLASTN_OUTPUT
-from src.ervin_utils import DEFAULT_OUTPUT_DIR
-from src.ervin_utils import TEMP_PROBE_BLASTER
-from src.exceptions import InvalidPathException
 from collections import namedtuple
-from src.probe_data import ProbeData
-import progressbar
+
 import argparse
 import os
+import progressbar
 
 
 DEFAULT_ALIGNMENT_LENGTH_THRESHOLD = 400

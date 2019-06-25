@@ -1,22 +1,25 @@
-import argparse
+from .ervin_utils import read_from_fasta_file, decompress_gz_files, MAKE_BLASTDB_CMD
+from .ervin_utils import homify_path
+from .ervin_utils import delete_directory_contents
+from .ervin_utils import format_timestamp_for_filename
+from .ervin_utils import print_to_fasta_file
+from .ervin_utils import sanitise_string
+from .ervin_utils import get_config
+from .ervin_utils import DEFAULT_OUTPUT_DIR
+from .ervin_utils import TEMP_FASTA_FILE
+from .ervin_utils import VIRUS_DB_SERVER
+from .ervin_utils import VIRUS_DB_SERVER_DIR
+
+from .probe_blaster import print_probe_to_temp_fasta_file
+
 from Bio.Blast.Applications import NcbiblastnCommandline
+from pathlib import Path
+
+import argparse
 import ftputil
 import json
 import logging
-from pathlib import Path
 import progressbar
-from src.probe_blaster import print_probe_to_temp_fasta_file
-from src.ervin_utils import read_from_fasta_file, decompress_gz_files, MAKE_BLASTDB_CMD
-from src.ervin_utils import homify_path
-from src.ervin_utils import delete_directory_contents
-from src.ervin_utils import format_timestamp_for_filename
-from src.ervin_utils import print_to_fasta_file
-from src.ervin_utils import sanitise_string
-from src.ervin_utils import get_config
-from src.ervin_utils import DEFAULT_OUTPUT_DIR
-from src.ervin_utils import TEMP_FASTA_FILE
-from src.ervin_utils import VIRUS_DB_SERVER
-from src.ervin_utils import VIRUS_DB_SERVER_DIR
 import subprocess
 import time
 

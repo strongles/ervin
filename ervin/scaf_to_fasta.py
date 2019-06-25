@@ -1,4 +1,4 @@
-from src.scaf_file import ScafRecord
+from .scaf_file import ScafRecord
 
 input_filepath = "scaf.txt"
 output_filepath = "fasta_output.txt"

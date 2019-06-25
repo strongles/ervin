@@ -1,10 +1,13 @@
-import argparse
+from .probe_finder import run_probe_finder
 
-from src.probe_finder import run_probe_finder
-from src.probe_blaster import run_probe_blaster
-from src.ervin_utils import DEFAULT_OUTPUT_DIR
-from src.virus_blaster import run_virus_blaster
-from src.virus_blaster import VIRUS_DB_DEFAULT
+from .probe_blaster import run_probe_blaster
+
+from .ervin_utils import DEFAULT_OUTPUT_DIR
+
+from .virus_blaster import run_virus_blaster
+from .virus_blaster import VIRUS_DB_DEFAULT
+
+import argparse
 
 
 def get_args():
