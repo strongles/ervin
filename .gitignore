@@ -13,3 +13,6 @@ output/
 testing.py
 *.png
 *.pyc
+build/
+dist/
+*.egg-info/

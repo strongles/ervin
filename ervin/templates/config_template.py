@@ -1,4 +1,4 @@
-{
+CONFIG_TEMPLATE = {
   "operational_data_storage": "~/.ervin/",
   "virus_db_storage": "~/.ervin/virus_db_store/",
   "genome_db_storage": "~/.ervin/genome_db_store/",
