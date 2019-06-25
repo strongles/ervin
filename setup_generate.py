@@ -5,7 +5,7 @@ import subprocess
 NEWLINE = '\n'
 BIG_INDENT = ' ' * 12
 SMALL_INDENT = ' ' * 4
-SEPARATOR = f"{NEWLINE}{BIG_INDENT}"
+SEPARATOR = f",{NEWLINE}{BIG_INDENT}"
 SETUP_CONTENT = """import setuptools
 
 with open("README.md") as readme:
