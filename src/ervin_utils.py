@@ -8,19 +8,38 @@ import logging
 import shutil
 import datetime
 
+"""
+Temp file constants
+"""
 TEMP_PROBE_BLASTER = "/tmp/probe_blaster"
 TEMP_PROBE_FINDER = "/tmp/probe_finder"
 TEMP_VIRUS_BLASTER = "/tmp/virus_blaster"
-DEFAULT_OUTPUT_DIR = Path.cwd() / "OUTPUT"
 TEMP_FASTA_FILE = "/tmp/temp.fasta"
 TEMP_TBLASTN_OUTPUT = "/tmp/temp_tblastn.tsv"
-NEWLINE = "\n"
+
+"""
+Defaults
+"""
+DEFAULT_OUTPUT_DIR = Path.cwd() / "OUTPUT"
 VIRUS_DB_SERVER = "ftp.ncbi.nlm.nih.gov"
 VIRUS_DB_SERVER_DIR = "refseq/release/viral/"
+
+"""
+Formatting assist
+"""
+NEWLINE = "\n"
 MAKE_BLASTDB_CMD = "makeblastdb -in '{db_files}' -title {db_name} -out {out_path} -dbtype nucl"
+
+"""
+Util paths
+"""
 # Gives us a handle to the ERViN home directory to access things like config files
 ERVIN_DIR = Path(__file__).parent.parent
 CONFIG_PATH = ERVIN_DIR / "config.json"
+
+"""
+Arg setup
+"""
 REQUIRED_DIRS = [
     "operational_data_storage",
     "virus_db_storage",
