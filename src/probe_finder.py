@@ -194,5 +194,9 @@ def run_probe_finder(file_list, align_len_threshold):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    run_as_main()
+    parsed_args = parse_args()
+    if parsed_args.file_list is not None:
+        input_files = [filename.name for filename in parsed_args.file_list]
+    else:
+        input_files = read_filenames_from_manifest(parsed_args.manifest)
+    run_probe_finder(input_files, parsed_args.alignment_len_threshold)

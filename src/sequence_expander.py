@@ -1,12 +1,22 @@
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 from src.exceptions import BadConfigFormatException, IncompleteArgsException
-from src.defaults import CONFIG_FILEPATH, NEWLINE, TEMP_BLASTN_OUTPUT, TEMP_FASTA_FILE, LTR_LOWER, \
-    LTR_UPPER, LTR_OUTFILE, ENV_UPPER
+from src.defaults import CONFIG_FILEPATH
+from src.defaults import NEWLINE
+from src.defaults import TEMP_BLASTN_OUTPUT
+from src.defaults import TEMP_FASTA_FILE
+from src.defaults import LTR_LOWER
+from src.defaults import LTR_UPPER
+from src.defaults import LTR_OUTFILE
+from src.defaults import ENV_UPPER
 from src.scaf_file import ScafRecord
+from pathlib import Path
+import logging
 import argparse
 import json
 import os
+
+LOGGER = logging.getLogger(Path(__file__).stem)
 
 
 REQUIRED_ARGS = ["file"]
@@ -24,7 +34,7 @@ def parse_input_file(filepath):
         file_entries = []
         with open(filepath) as input_file:
             for line in input_file:
-                line_tokens = line.strip().split(" ")
+                line_tokens = line.strip().split("\t")
                 file_entries.append({
                     "accession_id": line_tokens[0],
                     "start": int(line_tokens[1]),
