@@ -1,6 +1,7 @@
-from .ervin_utils import format_timestamp_for_filename
 from .ervin_utils import DEFAULT_OUTPUT_DIR
 from .ervin_utils import TEMP_PROBE_FINDER
+from .ervin_utils import format_timestamp_for_filename
+from .ervin_utils import total_result_records
 
 from .exceptions import InvalidPathException
 
@@ -37,13 +38,13 @@ def write_to_files(output_files, record):
             tsv.write(record.to_tsv())
 
 
-def set_up_output_files(output_dir):
+def set_up_output_files(output_dir, run_ts=None):
     if not os.path.isdir(output_dir):
         if os.path.exists(output_dir):
             raise InvalidPathException(f"Invalid output path provided: {output_dir}")
         else:
             os.makedirs(output_dir)
-    run_time = format_timestamp_for_filename()
+    run_time = run_ts if run_ts else format_timestamp_for_filename()
     fasta_output_path = os.path.join(output_dir, f"probe_finder-{run_time}.fasta")
     tsv_output_path = os.path.join(output_dir, f"probe_finder-{run_time}.tsv")
     with open(fasta_output_path, "w"):
@@ -187,14 +188,14 @@ def run_as_main():
         raise Exception("No results after running probe_finder.")
 
 
-def run_probe_finder(file_list, align_len_threshold):
+def run_probe_finder(file_list, align_len_threshold, run_ts):
     args = Args(file_list, align_len_threshold)
     result = find_probes_recursively(file_list, args)
 
     result_data = flatten_results(result)
-    output_files = set_up_output_files(TEMP_PROBE_FINDER)
+    output_files = set_up_output_files(TEMP_PROBE_FINDER, run_ts)
     [write_to_files(output_files, output) for output in result_data]
-    return output_files[0]
+    return output_files[0], total_result_records([output_files[1]])
 
 
 if __name__ == "__main__":

@@ -61,6 +61,20 @@ def homify_path(path_string):
         return path_string
 
 
+def ensure_output_dir_exists(output_dir_path):
+    if type(output_dir_path) is str:
+        destination_dir = Path(output_dir_path)
+    else:
+        destination_dir = output_dir_path
+    if not destination_dir.anchor:
+        destination_dir = Path.cwd() / destination_dir
+    elif str(destination_dir).startswith("~"):
+        destination_dir = Path(homify_path(str(destination_dir)))
+    if not destination_dir.exists():
+        Path.mkdir(destination_dir, parents=True)
+    return destination_dir
+
+
 def make_config(elem_dict):
     Config = namedtuple("Config", SUPPORTED_CONFIG_ARGS)
     if any([arg not in SUPPORTED_CONFIG_ARGS for arg in elem_dict.keys()]):
@@ -138,3 +152,11 @@ def print_to_fasta_file(filename, fasta_list, mode='w'):
     with open(filename, mode) as fasta_out:
         for fasta_record in fasta_list:
             fasta_out.write(f"{fasta_record['title']}{NEWLINE}{fasta_record['seq']}{NEWLINE}")
+
+
+def total_result_records(output_filepaths):
+    total_records = 0
+    for filepath in output_filepaths:
+        with open(filepath) as output_file:
+            total_records += len(output_file.readlines())
+    return total_records
