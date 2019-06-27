@@ -5,7 +5,7 @@ with open("README.md") as readme:
 
 setuptools.setup(
     name="ervin",
-    version="0.0.4",
+    version="0.0.5",
     description="ERVin is a collection of tools developed to assist "
                 "in discovering ERV sequences within genomic data",
     long_description=long_desc,
@@ -17,7 +17,7 @@ setuptools.setup(
     },
     licence="GPL-3.0-or-later",
     url="https://github.com/strongles/ervin",
-    download_url="https://github.com/strongles/ervin/archive/0.0.4.tar.gz",
+    download_url="https://github.com/strongles/ervin/archive/0.0.5.tar.gz",
     packages=setuptools.find_packages(),
     install_requires=[
             "biopython==1.73",
