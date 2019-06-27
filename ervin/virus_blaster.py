@@ -1,14 +1,18 @@
-from .ervin_utils import read_from_fasta_file, decompress_gz_files, MAKE_BLASTDB_CMD
-from .ervin_utils import homify_path
-from .ervin_utils import delete_directory_contents
-from .ervin_utils import format_timestamp_for_filename
-from .ervin_utils import print_to_fasta_file
-from .ervin_utils import sanitise_string
-from .ervin_utils import get_config
 from .ervin_utils import DEFAULT_OUTPUT_DIR
+from .ervin_utils import MAKE_BLASTDB_CMD
 from .ervin_utils import TEMP_FASTA_FILE
 from .ervin_utils import VIRUS_DB_SERVER
 from .ervin_utils import VIRUS_DB_SERVER_DIR
+from .ervin_utils import decompress_gz_files
+from .ervin_utils import delete_directory_contents
+from .ervin_utils import ensure_output_dir_exists
+from .ervin_utils import format_timestamp_for_filename
+from .ervin_utils import get_config
+from .ervin_utils import homify_path
+from .ervin_utils import print_to_fasta_file
+from .ervin_utils import read_from_fasta_file
+from .ervin_utils import sanitise_string
+from .ervin_utils import total_result_records
 
 from .probe_blaster import print_probe_to_temp_fasta_file
 
@@ -155,28 +159,36 @@ def get_top_virus_hit(record, db="Viruses"):
 
 
 def print_virus_results_to_file(virus_name, result_list, run_ts, output_dir):
-    destination_dir = Path(output_dir)
-    if not destination_dir.anchor:
-        destination_dir = Path.cwd() / destination_dir
-    if not destination_dir.exists():
-        Path.mkdir(destination_dir, parents=True)
+    destination_dir = ensure_output_dir_exists(output_dir)
     sanitised_virus_name = sanitise_string(virus_name)
     filename = destination_dir / f"{sanitised_virus_name}_{run_ts}.fasta"
     print_to_fasta_file(filename, result_list, mode='a')
+    return filename
 
 
-def run_virus_blaster(filename=None, db=None, output_dir=None):
-    run_stamp = format_timestamp_for_filename()
+def viruses_to_total_found(file_list):
+    virus_to_count = {}
+    for filepath in file_list:
+        row_count = total_result_records([filepath])
+        virus_name = str(filepath).replace(".fasta", "").split("/")[-1]
+        virus_to_count[virus_name] = row_count // 2
+    return virus_to_count
+
+
+def run_virus_blaster(filename=None, db=None, output_dir=None, run_ts=None):
+    run_stamp = run_ts if run_ts else format_timestamp_for_filename()
     update_virus_db()
     input_data = get_data_from_file(filename)
+    matched_virus_files = set()
     with progressbar.ProgressBar(max_value=len(input_data),
                                  type="percentage",
                                  prefix="Blasting against Viruses: ") as bar:
         for count, file_record in enumerate(input_data):
             bar.update(count)
             top_hit = get_top_virus_hit(file_record, db)
-            print_virus_results_to_file(top_hit, [file_record],
-                                        run_stamp, output_dir)
+            matched_virus_files.add(print_virus_results_to_file(top_hit, [file_record],
+                                                                run_stamp, output_dir))
+    return matched_virus_files, viruses_to_total_found(matched_virus_files)
 
 
 if __name__ == "__main__":

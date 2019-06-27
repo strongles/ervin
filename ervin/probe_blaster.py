@@ -1,10 +1,11 @@
+from .ervin_utils import DEFAULT_OUTPUT_DIR
+from .ervin_utils import TEMP_FASTA_FILE
+from .ervin_utils import TEMP_PROBE_BLASTER
+from .ervin_utils import TEMP_TBLASTN_OUTPUT
 from .ervin_utils import get_config
 from .ervin_utils import format_timestamp_for_filename
 from .ervin_utils import read_from_fasta_file
-from .ervin_utils import TEMP_FASTA_FILE
-from .ervin_utils import TEMP_TBLASTN_OUTPUT
-from .ervin_utils import DEFAULT_OUTPUT_DIR
-from .ervin_utils import TEMP_PROBE_BLASTER
+from .ervin_utils import total_result_records
 
 from .exceptions import InvalidPathException
 
@@ -106,8 +107,8 @@ def print_results(result_list, title, run_time, output_dir=DEFAULT_OUTPUT_DIR):
     return output_filepath
 
 
-def run_probe_blaster(file, genome_db, align_threshold, e_value, output_dir=TEMP_PROBE_BLASTER):
-    run_time = format_timestamp_for_filename()
+def run_probe_blaster(file, genome_db, align_threshold, e_value, run_ts=None, output_dir=TEMP_PROBE_BLASTER):
+    run_time = run_ts if run_ts else format_timestamp_for_filename()
     align_len = align_threshold if align_threshold else DEFAULT_ALIGNMENT_LENGTH_THRESHOLD
     e_val_threshold = e_value if e_value else DEFAULT_E_VALUE_THRESHOLD
     args = Args(file, output_dir, align_len, e_val_threshold)
@@ -124,7 +125,7 @@ def run_probe_blaster(file, genome_db, align_threshold, e_value, output_dir=TEMP
                                         probe_record["title"],
                                         run_time, output_dir)
             output_filepaths.append(output_file)
-    return output_filepaths
+    return output_filepaths, total_result_records(output_filepaths)
 
 
 if __name__ == "__main__":
