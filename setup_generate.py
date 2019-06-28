@@ -8,6 +8,11 @@ NEWLINE = '\n'
 BIG_INDENT = ' ' * 12
 SMALL_INDENT = ' ' * 4
 SEPARATOR = f",{NEWLINE}{BIG_INDENT}"
+TEST_LIBS = [
+    "mock",
+    "nose",
+    "flake8"
+]
 SETUP_CONTENT = """import setuptools
 
 with open("README.md") as readme:
@@ -51,7 +56,9 @@ def get_current_git_tag():
 
 def get_requirements():
     with open("requirements.txt") as requires:
-        require_list = [f'"{line.strip()}"' for line in requires.readlines()]
+        require_list = [f'"{line.strip()}"'
+                        for line in requires.readlines()
+                        if not any(lib in line for lib in TEST_LIBS)]
     return f"[{NEWLINE}{BIG_INDENT}{SEPARATOR.join(require_list)}{NEWLINE}{SMALL_INDENT}]"
 
 

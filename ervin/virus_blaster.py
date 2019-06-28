@@ -170,7 +170,7 @@ def viruses_to_total_found(file_list):
     virus_to_count = {}
     for filepath in file_list:
         row_count = total_result_records([filepath])
-        virus_name = str(filepath).replace(".fasta", "").split("/")[-1]
+        virus_name = filepath.stem[:-20]  # Trim the timestamp from the filename
         virus_to_count[virus_name] = row_count // 2
     return virus_to_count
 
