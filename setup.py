@@ -1,11 +1,13 @@
 import setuptools
 
+VERSION = "0.0.6"
+
 with open("README.md") as readme:
     long_desc = str(readme.read())
 
 setuptools.setup(
     name="ervin",
-    version="0.0.6",
+    version=VERSION,
     description="ERVin is a collection of tools developed to assist "
                 "in discovering ERV sequences within genomic data",
     long_description=long_desc,

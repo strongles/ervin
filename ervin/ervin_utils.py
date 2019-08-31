@@ -8,7 +8,6 @@ from pathlib import Path
 import gzip
 import json
 import logging
-import shutil
 import datetime
 
 TEMP_PROBE_BLASTER = "/tmp/probe_blaster"

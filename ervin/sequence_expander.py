@@ -19,16 +19,6 @@ import json
 import os
 
 
-REQUIRED_ARGS = ["file"]
-#     [
-#     "start",
-#     "end",
-#     "accession_id",
-#     "range_expansion_size",
-#     "range_size"
-# ]
-
-
 def parse_input_file(filepath):
     if os.path.isfile(filepath):
         file_entries = []
@@ -49,14 +39,14 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--file",
                         help="File containing genome segment definitions",
-                        type=str,
+                        type=argparse.FileType,
                         required=True),
     parser.add_argument("-res", "--range_expansion_size",
                         help="the number of positions by which to expand "
                              "the selection window from the genome",
                         type=int)
-    parser.add_argument("-ff", "--fasta_filepath",
-                        help="filepath to the fasta db to query for the full genome sequence",
+    parser.add_argument("-gdb", "--genome_database",
+                        help="Name of the db to query for the full genome sequence",
                         type=str)
     return parser.parse_args()
     # parser = argparse.ArgumentParser()
@@ -85,30 +75,8 @@ def parse_args():
     # return parser.parse_args()
 
 
-def get_conf_settings():
-    if os.path.isfile(CONFIG_FILEPATH):
-        with open(CONFIG_FILEPATH) as config_file:
-            try:
-                return json.load(config_file)
-            except Exception:
-                raise BadConfigFormatException(Exception)
-    else:
-        print("Config file not present. All required arguments must be passed manually")
-        return {}
-
-
-def validate_settings(conf_settings, parsed_args):
-    validation = {arg: (arg not in conf_settings and arg not in parsed_args)
-                  for arg in REQUIRED_ARGS}
-    print(validation)
-    if any([(arg not in conf_settings and arg not in parsed_args) for arg in REQUIRED_ARGS]):
-        raise IncompleteArgsException(f"Args missing. Ensure all are provided: "
-                                      f"\n{NEWLINE.join(REQUIRED_ARGS)}")
-    return {**conf_settings, **vars(parsed_args)}
-
-
-def compute_ranges(range_start, range_end):
-    return range_start - 5000, range_end + 5000
+def compute_ranges(range_start, range_end, expansion_amount):
+    return range_start - expansion_amount, range_end + expansion_amount
 
 
 def get_from_db(range_start, range_end, accession_id, filepath):
@@ -122,25 +90,19 @@ def get_from_db(range_start, range_end, accession_id, filepath):
 def run_blast_against_tempfile():
     # outfmt=15 -> JSON
     # outfmt=5 -> XML
-    blast_command = NcbiblastnCommandline(out=TEMP_BLASTN_OUTPUT,
-                                          query=TEMP_FASTA_FILE,
+    blast_command = NcbiblastnCommandline(query=TEMP_FASTA_FILE,
                                           subject=TEMP_FASTA_FILE,
                                           outfmt=15,
                                           strand="both")
-    blast_command()
+    return blast_command()
 
 
 def write_result_to_tempfile(record):
     record.print_to_file(TEMP_FASTA_FILE)
 
 
-def read_blast_result_from_file():
-    with open(TEMP_BLASTN_OUTPUT) as blast_file:
-        return json.load(blast_file)
-
-
 def get_blast_results():
-    blast_data = read_blast_result_from_file()["BlastOutput2"][0]["report"]
+    blast_data = run_blast_against_tempfile()["BlastOutput2"][0]["report"]
     return blast_data["results"]["bl2seq"][0]
 
 
@@ -204,13 +166,12 @@ def print_ltr_candidates_to_file(ltr_list):
             outfile.write(ltr)
 
 
-def run():
-    args = validate_settings(get_conf_settings(), parse_args())
+def run(input_filepath, genome_db):
     # acc_id = args["accession_id"]
     # start = args["start"]
     # end = args["end"]
-    records = parse_input_file(args["file"])
-    db_filepath = args["fasta_filepath"]
+    records = parse_input_file(input_filepath)
+    genome_db_path = args["fasta_filepath"]
     ltr_candidates = []
     for record in records:
         new_range_start, new_range_end = compute_ranges(record["start"], record["end"])
@@ -218,14 +179,14 @@ def run():
                                  first_position=new_range_start,
                                  second_position=new_range_end,
                                  segment=get_from_db(new_range_start, new_range_end,
-                                                     record["accession_id"], db_filepath))
+                                                     record["accession_id"], genome_db))
         write_result_to_tempfile(scaf_record)
-        run_blast_against_tempfile()
         blast_results = get_blast_results()
-        ltr_candidates.extend(determine_ltr_hits(blast_results, db_filepath))
+        ltr_candidates.extend(determine_ltr_hits(blast_results, genome_db))
     print_ltr_candidates_to_file(ltr_candidates)
     # TODO: Plug the LTR segments into the VIRUS DB to confirm them further
 
 
 if __name__ == "__main__":
+    args = parse_args()
     run()
