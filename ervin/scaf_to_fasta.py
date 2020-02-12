@@ -6,8 +6,10 @@ fasta_filepath = "blah.fasta"
 
 
 def construct_file_line(scaf_record):
-    return f">{scaf_record.accession_id}_{scaf_record.start}_{scaf_record.end}_" \
+    return (
+        f">{scaf_record.accession_id}_{scaf_record.start}_{scaf_record.end}_"
         f"{scaf_record.direction}\n{scaf_record.segment}\n"
+    )
 
 
 if __name__ == "__main__":

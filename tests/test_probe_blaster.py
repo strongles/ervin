@@ -20,29 +20,25 @@ def dummy_expected_sanitised_data():
         ">something else",
         "another",
         "shorter",
-        "sequence"
+        "sequence",
     ]
 
 
 class TestProbeBlaster(TestCase):
-
     @patch("builtins.open", new_callable=mock_open, read_data=dummy_raw_data())
     def test_raw_data_correctly_sanitised(self, *_):
         expected_data = dummy_expected_sanitised_data()
         actual_data = read_and_sanitise_raw_data("some_filename")
         self.assertListEqual(expected_data, actual_data)
 
-    @patch("ervin.ervin_utils.read_and_sanitise_raw_data", return_value=dummy_expected_sanitised_data())
+    @patch(
+        "ervin.ervin_utils.read_and_sanitise_raw_data",
+        return_value=dummy_expected_sanitised_data(),
+    )
     def test_read_probe_records(self, mock_read_data):
         expected_records = [
-            {
-                "title": ">something",
-                "seq": "amultilinesequence"
-            },
-            {
-                "title": ">something else",
-                "seq": "anothershortersequence"
-            }
+            {"title": ">something", "seq": "amultilinesequence"},
+            {"title": ">something else", "seq": "anothershortersequence"},
         ]
         actual_records = read_from_fasta_file("filename")
         mock_read_data.assert_called_once_with("filename")

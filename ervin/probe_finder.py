@@ -89,9 +89,11 @@ def is_align_length_threshold_satisfied(args, record):
 def find_probes(args, first_probe_data, second_probe_data):
     output_data = unique_scaffolds(first_probe_data, second_probe_data)
 
-    with progressbar.ProgressBar(max_value=len(first_probe_data),
-                                 type="percentage",
-                                 prefix="Filtering and merging: ") as bar:
+    with progressbar.ProgressBar(
+        max_value=len(first_probe_data),
+        type="percentage",
+        prefix="Filtering and merging: ",
+    ) as bar:
         for count, (scaffold, records) in enumerate(first_probe_data.items()):
             bar.update(count)
             for record in records:
@@ -100,11 +102,12 @@ def find_probes(args, first_probe_data, second_probe_data):
                     for comparitor in second_probe_data[scaffold]:
                         if current_print_candidate.is_superset(comparitor):
                             current_print_candidate = comparitor
-                        elif current_print_candidate.is_near_neighbour(comparitor) \
-                                or current_print_candidate.is_range_extension(comparitor):
+                        elif current_print_candidate.is_near_neighbour(
+                            comparitor
+                        ) or current_print_candidate.is_range_extension(comparitor):
                             current_print_candidate = ProbeData.merge_records(
-                                current_print_candidate,
-                                comparitor)
+                                current_print_candidate, comparitor
+                            )
                     if scaffold not in output_data:
                         output_data[scaffold] = {current_print_candidate}
                     else:
@@ -125,45 +128,58 @@ def find_probes_recursively(file_list, args, tail=None):
         elif len(file_list) > 2:
             first_probe_data = read_probe_records_from_file(file_list[0])
             second_probe_data = read_probe_records_from_file(file_list[1])
-            return find_probes_recursively(file_list[2:],
-                                           args,
-                                           tail=find_probes(args,
-                                                            first_probe_data,
-                                                            second_probe_data))
+            return find_probes_recursively(
+                file_list[2:],
+                args,
+                tail=find_probes(args, first_probe_data, second_probe_data),
+            )
     else:
         if len(file_list) == 0:
             return find_probes(args, tail, tail)
         else:
             probe_data = read_probe_records_from_file(file_list[0])
-            return find_probes_recursively(file_list[1:], args,
-                                           tail=find_probes(args, tail, probe_data))
+            return find_probes_recursively(
+                file_list[1:], args, tail=find_probes(args, tail, probe_data)
+            )
 
 
 def read_filenames_from_manifest(manifest):
-    with open(manifest, 'r') as manifest_file:
+    with open(manifest, "r") as manifest_file:
         return [line.strip() for line in manifest_file.readlines()]
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-o", "--output_dir",
-                        help="Directory in which to create the output files",
-                        type=str,
-                        default=DEFAULT_OUTPUT_DIR,
-                        required=False)
-    parser.add_argument("-a", "--alignment_len_threshold",
-                        help="Minimum length threshold that BLAST result "
-                             "alignment sequence lengths should exceed",
-                        type=int,
-                        required=False)
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        help="Directory in which to create the output files",
+        type=str,
+        default=DEFAULT_OUTPUT_DIR,
+        required=False,
+    )
+    parser.add_argument(
+        "-a",
+        "--alignment_len_threshold",
+        help="Minimum length threshold that BLAST result "
+        "alignment sequence lengths should exceed",
+        type=int,
+        required=False,
+    )
     file_sourcing = parser.add_mutually_exclusive_group(required=True)
-    file_sourcing.add_argument("-f", "--file_list",
-                               help="Input file list",
-                               type=argparse.FileType('r'),
-                               nargs='*')
-    file_sourcing.add_argument("-m", "--manifest",
-                               help="Filepath for a manifest file containing a list of input files",
-                               type=argparse.FileType('r')),
+    file_sourcing.add_argument(
+        "-f",
+        "--file_list",
+        help="Input file list",
+        type=argparse.FileType("r"),
+        nargs="*",
+    )
+    file_sourcing.add_argument(
+        "-m",
+        "--manifest",
+        help="Filepath for a manifest file containing a list of input files",
+        type=argparse.FileType("r"),
+    ),
     return parser.parse_args()
 
 

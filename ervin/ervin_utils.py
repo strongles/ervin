@@ -8,7 +8,6 @@ from pathlib import Path
 import gzip
 import json
 import logging
-import shutil
 import datetime
 
 TEMP_PROBE_BLASTER = "/tmp/probe_blaster"
@@ -20,22 +19,20 @@ TEMP_TBLASTN_OUTPUT = "/tmp/temp_tblastn.tsv"
 NEWLINE = "\n"
 VIRUS_DB_SERVER = "ftp.ncbi.nlm.nih.gov"
 VIRUS_DB_SERVER_DIR = "refseq/release/viral/"
-MAKE_BLASTDB_CMD = "makeblastdb -in '{db_files}' -title {db_name} -out {out_path} -dbtype nucl"
+MAKE_BLASTDB_CMD = (
+    "makeblastdb -in '{db_files}' -title {db_name} -out {out_path} -dbtype nucl"
+)
 # Gives us a handle to the ERViN home directory to access things like config files
 # ERVIN_DIR = Path(__file__).parent.parent
 CONFIG_PATH = Path.home() / ".ervin/config.json"
-REQUIRED_DIRS = [
-    "operational_data_storage",
-    "virus_db_storage",
-    "genome_db_storage"
-]
+REQUIRED_DIRS = ["operational_data_storage", "virus_db_storage", "genome_db_storage"]
 SUPPORTED_CONFIG_ARGS = [
     *REQUIRED_DIRS,
     "range_expansion_size",
     "range_size",
     "probe_blaster_align_len_thresh",
     "probe_blaster_e_value_thresh",
-    "log_location"
+    "log_location",
 ]
 
 LOGGER = logging.getLogger(Path(__file__).stem)
@@ -90,7 +87,7 @@ def get_config():
     if not CONFIG_PATH.exists():
         if not CONFIG_PATH.parent.exists():
             CONFIG_PATH.parent.mkdir(parents=True)
-        with open(CONFIG_PATH, 'w') as config_writer:
+        with open(CONFIG_PATH, "w") as config_writer:
             json.dump(CONFIG_TEMPLATE, config_writer)
     with open(CONFIG_PATH) as config_in:
         config_data = json.load(config_in)
@@ -133,25 +130,27 @@ def read_from_fasta_file(filename):
     parsed_file_data = []
     for i in range(len(title_indices)):
         try:
-            sequence = "".join(input_data[title_indices[i]+1:title_indices[i+1]])
+            sequence = "".join(input_data[title_indices[i] + 1 : title_indices[i + 1]])
             record = {"title": input_data[title_indices[i]], "seq": sequence}
             parsed_file_data.append(record)
         except IndexError:
-            sequence = "".join(input_data[title_indices[i] + 1:])
+            sequence = "".join(input_data[title_indices[i] + 1 :])
             record = {"title": input_data[title_indices[i]], "seq": sequence}
             parsed_file_data.append(record)
     return parsed_file_data
 
 
-def print_to_fasta_file(filename, fasta_list, mode='w'):
-    if mode == 'a':
+def print_to_fasta_file(filename, fasta_list, mode="w"):
+    if mode == "a":
         if not Path.exists(filename):
-            with open(filename, 'w'):
+            with open(filename, "w"):
                 LOGGER.debug(f"Created output .fasta file: {filename}")
                 pass
     with open(filename, mode) as fasta_out:
         for fasta_record in fasta_list:
-            fasta_out.write(f"{fasta_record['title']}{NEWLINE}{fasta_record['seq']}{NEWLINE}")
+            fasta_out.write(
+                f"{fasta_record['title']}{NEWLINE}{fasta_record['seq']}{NEWLINE}"
+            )
 
 
 def total_result_records(output_filepaths):

@@ -86,37 +86,63 @@ class ProbeData:
         else:
             start = self.end
             end = self.start
-        stringified_output = [str(output) for output in
-                              [self.accession_id, self.scaffold, self.scaffold_length, start, end,
-                               self.e_value, self.alignment_length, self.acc_sequence,
-                               self.scaffold_alignment, self.frame]]
+        stringified_output = [
+            str(output)
+            for output in [
+                self.accession_id,
+                self.scaffold,
+                self.scaffold_length,
+                start,
+                end,
+                self.e_value,
+                self.alignment_length,
+                self.acc_sequence,
+                self.scaffold_alignment,
+                self.frame,
+            ]
+        ]
         tab = "\t"
         return f"{tab.join(stringified_output)}\n"
 
     def is_superset(self, comparitor):
-        return self.start >= comparitor.start \
-               and self.end <= comparitor.end \
-               and self.frame == comparitor.frame
+        return (
+            self.start >= comparitor.start
+            and self.end <= comparitor.end
+            and self.frame == comparitor.frame
+        )
 
     def is_near_neighbour(self, comparitor):
         first_diff = self.start - comparitor.end
         second_diff = comparitor.start - self.end
-        return (0 < first_diff <= 50
-                or 0 < second_diff <= 50) and \
-            self.direction == comparitor.direction and \
-            self.frame == comparitor.frame
+        return (
+            (0 < first_diff <= 50 or 0 < second_diff <= 50)
+            and self.direction == comparitor.direction
+            and self.frame == comparitor.frame
+        )
 
     def is_range_extension(self, comparitor):
-        return (((self.start <= comparitor.start)
-                 and (comparitor.start <= self.end < comparitor.end))
-                or ((comparitor.start <= self.start)
-                    and (self.start <= comparitor.end < self.end))
-                or ((self.end >= comparitor.end)
-                    and (comparitor.start <= self.start < comparitor.end))
-                or ((comparitor.end >= self.end)
-                    and (self.start <= comparitor.start < self.end))) \
-               and self.direction == comparitor.direction \
-               and self.frame == comparitor.frame
+        return (
+            (
+                (
+                    (self.start <= comparitor.start)
+                    and (comparitor.start <= self.end < comparitor.end)
+                )
+                or (
+                    (comparitor.start <= self.start)
+                    and (self.start <= comparitor.end < self.end)
+                )
+                or (
+                    (self.end >= comparitor.end)
+                    and (comparitor.start <= self.start < comparitor.end)
+                )
+                or (
+                    (comparitor.end >= self.end)
+                    and (self.start <= comparitor.start < self.end)
+                )
+            )
+            and self.direction == comparitor.direction
+            and self.frame == comparitor.frame
+        )
 
     def merge_with(self, source):
         return self.merge_records(self, source)
@@ -129,20 +155,23 @@ class ProbeData:
         else:
             first = b
             second = a
-        overrides = {
-            "start": first.start,
-            "end": second.end
-        }
+        overrides = {"start": first.start, "end": second.end}
         if first.end < second.start:
-            overrides["scaffold_alignment"] = "".join([first.scaffold_alignment,
-                                                       "-" * ceil((second.start - first.end) / 3),
-                                                       second.scaffold_alignment])
+            overrides["scaffold_alignment"] = "".join(
+                [
+                    first.scaffold_alignment,
+                    "-" * ceil((second.start - first.end) / 3),
+                    second.scaffold_alignment,
+                ]
+            )
         elif first.end > second.start:
             overlap = ceil((first.end - second.start) / 3)
-            overrides["scaffold_alignment"] = "".join([first.scaffold_alignment,
-                                                       second.scaffold_alignment[overlap:]])
-        align_length = (overrides["end"] - overrides["start"]) - \
-                       overrides["scaffold_alignment"].count("-")
+            overrides["scaffold_alignment"] = "".join(
+                [first.scaffold_alignment, second.scaffold_alignment[overlap:]]
+            )
+        align_length = (overrides["end"] - overrides["start"]) - overrides[
+            "scaffold_alignment"
+        ].count("-")
         overrides["alignment_length"] = align_length
         overrides["accession_id"] = first.accession_id + "_" + second.accession_id
         return ProbeData(first, overrides)
