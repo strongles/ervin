@@ -16,3 +16,7 @@ testing.py
 build/
 dist/
 *.egg-info/
+.coverage
+.eggs/
+.ipynb_checkpoints/
+*.ipynb
