@@ -79,16 +79,16 @@ def run_blast(probe, db, e_value_threshold):
     return probe_records
 
 
-def _length_requirement(probe_list, args):
-    return [probe for probe in probe_list if probe.alignment_length > args.alignment_len_threshold]
+def _length_requirement(probe_list, config):
+    return [probe for probe in probe_list if probe.alignment_length > config.alignment_len_threshold]
 
 
-def filter_results(hits, args):
+def filter_results(hits, config):
     filters = [
         _length_requirement,
     ]
     for filter_case in filters:
-        hits = filter_case(hits, args)
+        hits = filter_case(hits, config)
     return hits
 
 
