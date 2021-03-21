@@ -67,5 +67,5 @@ def run_blast_probes(filename, genome_db, output_dir, align_thresh, e_val_limit,
             file_ts,
             extension="tsv"
         )
-        write_tsv_file(filtered_hits, blast_result.query_accession_id, output_filepath)
+        write_tsv_file(filtered_hits, output_filepath)
         output_filepaths.append(output_filepath)

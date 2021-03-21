@@ -32,10 +32,10 @@ def fasta_file_records(filename):
         yield Fasta(title, seq)
 
 
-def write_tsv_file(records, source_accession_id, filename):
+def write_tsv_file(records, filename):
     with open(filename, 'w') as file_out:
         for record in records:
-            file_out.write(record.to_tsv_record(source_accession_id))
+            file_out.write(record.to_tsv_record())
 
 
 def write_fasta_file(fasta_records: list[Fasta], filename):

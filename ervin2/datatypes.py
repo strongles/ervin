@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from dataclasses import field
 
 
 @dataclass
 class BlastHit:
     description: list[dict]
     hsps: list[dict]
+    query_accession_id: str
     num: int
     len: int
 
@@ -68,7 +68,7 @@ class BlastHit:
         }
         return direction_map[self.hsps[0]["hit_from"] < self.hsps[0]["hit_to"]]
 
-    def to_tsv_record(self, accession_id):
+    def to_tsv_record(self):
         tab = '\t'
         if self.direction == "P":
             start = self.start
@@ -77,7 +77,7 @@ class BlastHit:
             start = self.end
             end = self.start
         stringified_output = [str(output) for output in
-                              [accession_id, self.scaffold_id, self.scaffold_length, start, end, self.e_value,
+                              [self.query_accession_id, self.scaffold_id, self.scaffold_length, start, end, self.e_value,
                                self.alignment_length, self.query_sequence, self.hit_sequence, self.frame]]
         return f"{tab.join(stringified_output)}\n"
 
@@ -106,12 +106,12 @@ class BlastResult:
         """Get an iterator over the BLAST hits"""
         for hit in self.hits:
             if len(hit["hsps"]) == 1:
-                yield BlastHit(**hit)
+                yield BlastHit(query_accession_id=self.query_accession_id, **hit)
             else:
                 for i, hsp in enumerate(hit["hsps"]):
                     sub_hit = hit.copy()
                     sub_hit["hsps"] = [hit["hsps"][i]]
-                    yield BlastHit(**sub_hit)
+                    yield BlastHit(query_accession_id=self.query_accession_id, **sub_hit)
 
 
 @dataclass
