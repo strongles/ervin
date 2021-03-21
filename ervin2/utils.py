@@ -1,4 +1,5 @@
 from datatypes import Fasta
+from datatypes import BlastHit
 from datetime import datetime
 
 
@@ -30,6 +31,11 @@ def fasta_file_records(filename):
             seq.append(line)
     if title and seq:
         yield Fasta(title, seq)
+
+
+def blast_hit_file_records(filename):
+    for line in read_file_data(filename):
+        yield BlastHit.from_tsv_record(line)
 
 
 def write_tsv_file(records, filename):

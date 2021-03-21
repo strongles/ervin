@@ -68,6 +68,26 @@ class BlastHit:
         }
         return direction_map[self.hsps[0]["hit_from"] < self.hsps[0]["hit_to"]]
 
+    def __lt__(self, comparitor):
+        if self.scaffold_id < comparitor.scaffold_id:
+            return True
+        elif self.start < comparitor.start:
+            return True
+        elif self.end < comparitor.end:
+            return True
+        else:
+            return False
+
+    def to_fasta(self):
+        if self.direction == "P":
+            start = self.start
+            end = self.end
+        else:
+            start = self.end
+            end = self.start
+        title = f"{self.scaffold_id} {start} {end} {self.direction}"
+        return Fasta(title, [self.hit_sequence])
+
     def to_tsv_record(self):
         tab = '\t'
         if self.direction == "P":
@@ -80,6 +100,39 @@ class BlastHit:
                               [self.query_accession_id, self.scaffold_id, self.scaffold_length, start, end, self.e_value,
                                self.alignment_length, self.query_sequence, self.hit_sequence, self.frame]]
         return f"{tab.join(stringified_output)}\n"
+
+    @classmethod
+    def from_tsv_record(cls, record):
+        property_positions = {
+            "query_accession_id": 0,
+            "scaffold_id": 1,
+            "scaffold_length": 2,
+            "start": 3,
+            "end": 4,
+            "e_value": 5,
+            "alignment_length": 6,
+            "query_sequence": 7,
+            "hit_sequence": 8,
+            "frame": 9
+        }
+        record_tokens = record.strip().split("\t")
+        record_value_dict = {}
+        for key, value in property_positions.items():
+            record_value_dict[key] = record_tokens[value]
+        hsps_dict = {
+            "evalue": record_value_dict["e_value"],
+            "align_len": record_value_dict["alignment_length"],
+            "qseq": record_value_dict["query_sequence"],
+            "hseq": record_value_dict["hit_sequence"],
+            "frame": record_value_dict["hit_frame"],
+            "hit_from": record_value_dict["start"],
+            "hit_to": record_value_dict["end"]
+        }
+        return BlastHit(query_accession_id=record_value_dict["query_accession_id"],
+                        hsps=[hsps_dict],
+                        num=0,
+                        len=record_value_dict["scaffold_length"],
+                        description=[{"title": record_value_dict["scaffold_id"]}])
 
 
 @dataclass
